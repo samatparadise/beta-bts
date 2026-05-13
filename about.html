@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About & Data — Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.about-section {
+  max-width: 760px;
+  padding: 0 0 40px;
+}
+
+.about-section h2 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  line-height: 1.2;
+}
+
+.about-section h2:first-of-type {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+.about-section p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink2);
+  margin-bottom: 14px;
+}
+
+.about-section p strong { color: var(--ink); font-weight: 600; }
+
+.about-section ul {
+  margin: 12px 0 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.about-section li {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink2);
+}
+
+.about-section li strong { color: var(--ink); font-weight: 600; }
+
+/* Code blocks */
+.code-block {
+  background: var(--ink);
+  color: #C8B89A;
+  padding: 20px 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  border-radius: 4px;
+  margin: 16px 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.code-block .cm { color: rgba(255,255,255,0.35); }
+.code-block .ck { color: #7eb8c9; }
+.code-block .cv { color: #f0c040; }
+.code-block .cs { color: #88cc88; }
+
+/* Sidebar layout */
+.about-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 60px;
+  align-items: start;
+}
+
+.about-sidebar {
+  position: sticky;
+  top: calc(var(--nav-h) + 32px);
+}
+
+.sidebar-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 20px 22px;
+  margin-bottom: 3px;
+}
+
+.sidebar-card-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  margin-bottom: 10px;
+}
+
+.sidebar-link {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--us);
+  padding: 4px 0;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border2);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.sidebar-link:last-child { border-bottom: none; }
+.sidebar-link:hover { text-decoration: underline; }
+
+.sidebar-text {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+
+/* Principles */
+.principles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.principle-item {
+  background: var(--bg);
+  padding: 18px 20px;
+}
+
+.principle-num {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--bg3);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.principle-title { font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+.principle-desc { font-size: 13px; color: var(--ink2); line-height: 1.55; }
+
+@media (max-width: 900px) {
+  .about-layout { grid-template-columns: 1fr; }
+  .about-sidebar { position: static; }
+  .principles-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+      <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="domains.html">Domains</a>
+    <a class="nav-link" href="operators.html">Operators</a>
+    <a class="nav-link" href="countries.html">Countries</a>
+    <a class="nav-link" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link  active" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-eyebrow">About This Project</div>
+    <h1 class="hero-title" style="font-size:clamp(28px,4vw,48px);">About &amp; Data</h1>
+    <p class="hero-sub" style="font-size:16px;margin-top:14px;">Methodology, principles, how to edit the data, and how to contribute.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div style="padding-top:40px;"></div>
+    <div class="about-layout">
+
+      <!-- Main content -->
+      <div class="about-section">
+
+        <h2>What this is</h2>
+        <p>
+          The Between Two Stacks is a <strong>prototype research and advocacy tool</strong> for digital rights researchers, policy makers, and activists working on tech accountability and tech justice issues in Southeast Asia.
+        </p>
+        <p>
+          It maps how US and Chinese technology blocs are shaping surveillance, data governance, platforms, AI deployment, cybersecurity, financial technology, digital trade law, and soft power across the ten ASEAN member states — with consistent dual-bloc analysis rather than framing one superpower as the problem and the other as the solution.
+        </p>
+        <p>
+          It was developed as a prototype. Data is indicative. All sources are cited. Everything should be verified before use in published work.
+        </p>
+
+                        <h2>Methodology</h2>
+        <p>
+          <strong>Domains</strong> were identified through a systematic review of literature from Citizen Lab, Access Now, Article 19, Carnegie Endowment for International Peace, CSIS, the Wilson Center, MERICS, and Freedom House, focusing on domains where US and Chinese tech blocs have documented and distinct impacts on rights and governance in ASEAN.
+        </p>
+        <p>
+          <strong>Actor selection</strong> focuses on companies, agencies, and institutions with significant documented presence in ASEAN — either through contracts, infrastructure, platform usage, or governance influence. It is not exhaustive. Actors were selected for their significance to rights and governance outcomes, not market share alone.
+        </p>
+        <p>
+          <strong>Country alignments</strong> are analytical assessments based on publicly documented policy positions, infrastructure contracts, intelligence relationships, and trade agreements — not official designations. They reflect a snapshot and should be treated as dynamic.
+        </p>
+        <p>
+          <strong>References</strong> are drawn from peer-reviewed research, NGO investigations, investigative journalism, and policy analysis from established institutions. All URLs were active as of the dataset compilation date. Dead links should be replaced with archived versions (archive.org) or equivalent sources.
+        </p>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="about-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">Key Organisations</div>
+          <a class="sidebar-link" href="https://citizenlab.ca" target="_blank">Citizen Lab — citizenlab.ca</a>
+          <a class="sidebar-link" href="https://www.accessnow.org" target="_blank">Access Now — accessnow.org</a>
+          <a class="sidebar-link" href="https://www.article19.org" target="_blank">Article 19 — article19.org</a>
+          <a class="sidebar-link" href="https://freedomhouse.org" target="_blank">Freedom House — freedomhouse.org</a>
+          <a class="sidebar-link" href="https://carnegieendowment.org" target="_blank">Carnegie Endowment</a>
+          <a class="sidebar-link" href="https://csis.org" target="_blank">CSIS</a>
+          <a class="sidebar-link" href="https://merics.org" target="_blank">MERICS</a>
+          <a class="sidebar-link" href="https://eastasiaforum.org" target="_blank">East Asia Forum</a>
+          <a class="sidebar-link" href="https://asean.org" target="_blank">ASEAN Secretariat</a>
+        </div>
+        
+      </div>
+
+    </div>
+    <div style="padding-bottom:64px;"></div>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A research and advocacy tool for the digital rights community.</div>
+      <div class="footer-note">Prototype v1.0 · May 2026 · Content is indicative; verify before publishing.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">All Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="about.html">About & Data</a>
+      </div>
+    </div>
+    
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Category — Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── CATEGORY PAGE ─────────────────── */
+.cat-hero {
+  background: var(--ink);
+  color: #fff;
+  padding: 52px 0 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cat-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+.cat-hero .container { position: relative; z-index: 1; }
+
+.cat-hero-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+
+.cat-hero-title {
+  font-family: var(--serif);
+  font-size: clamp(30px, 4.5vw, 52px);
+  font-weight: 900;
+  line-height: 1.08;
+  max-width: 760px;
+  margin-bottom: 18px;
+}
+
+.cat-hero-summary {
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.68);
+  max-width: 680px;
+  font-weight: 300;
+}
+
+/* Navigation between domains */
+.cat-nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  display: flex;
+  overflow-x: auto;
+  gap: 2px;
+}
+
+.cat-nav-link {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 6px 14px;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: 3px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cat-nav-link:hover { background: var(--bg3); color: var(--ink); text-decoration: none; }
+.cat-nav-link.active { background: var(--ink); color: #fff; }
+.cat-nav-num { color: var(--ink4); }
+.cat-nav-link.active .cat-nav-num { color: rgba(255,255,255,0.5); }
+
+/* Actors related to this category */
+.actors-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.operator-mini-card {
+  background: var(--bg);
+  padding: 16px 18px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+}
+
+.operator-mini-card:hover { background: var(--bg2); text-decoration: none; }
+
+.operator-mini-name {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 3px;
+  color: var(--ink);
+}
+
+.operator-mini-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  margin-bottom: 5px;
+}
+
+.operator-mini-countries {
+  font-size: 11px;
+  color: var(--ink3);
+  line-height: 1.4;
+}
+
+/* Prev / Next navigation */
+.cat-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 3px;
+  margin-top: 48px;
+  border-top: 2px solid var(--border);
+  padding-top: 24px;
+}
+
+.cat-pag-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+  flex: 1;
+  max-width: 46%;
+}
+
+.cat-pag-btn:hover { background: var(--bg2); text-decoration: none; }
+.cat-pag-btn.next { text-align: right; }
+
+.cat-pag-dir {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink4);
+}
+
+.cat-pag-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+/* Sticky TOC on wide screens */
+@media (min-width: 1100px) {
+  .content-with-toc {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .toc {
+    position: sticky;
+    top: calc(var(--nav-h) + 24px);
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+
+  .toc-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 12px;
+  }
+
+  .toc-link {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink3);
+    text-decoration: none;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border2);
+    line-height: 1.4;
+    transition: color 0.15s;
+  }
+
+  .toc-link:last-child { border-bottom: none; }
+  .toc-link:hover { color: var(--ink); text-decoration: none; }
+}
+
+@media (max-width: 1099px) {
+  .toc { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+      <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link  active" href="domains.html">Domains</a>
+    <a class="nav-link" href="operators.html">Operators</a>
+    <a class="nav-link" href="countries.html">Countries</a>
+    <a class="nav-link" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<!-- HERO (injected) -->
+<div id="cat-hero"></div>
+
+<!-- CATEGORY NAV -->
+<div class="cat-nav container-wide" id="cat-nav"></div>
+
+<!-- MAIN -->
+<main>
+  <div class="container">
+    <div class="content-with-toc">
+      <!-- Main column -->
+      <div id="main-col">
+
+        <!-- Bloc Panels -->
+        <div class="section-label mt-0" id="sec-blocs">US &amp; Chinese Bloc Analysis</div>
+        <div class="bloc-panels" id="bloc-panels"></div>
+
+        <!-- Key Issues -->
+        <div class="section-label" id="sec-issues">Key Issues for Researchers &amp; Advocates</div>
+        <div class="issue-list" id="issue-list"></div>
+
+        <!-- Actors -->
+        <div class="section-label" id="sec-actors">Relevant Operators</div>
+        <div class="actors-mini-grid" id="operators-grid"></div>
+        <p style="font-size:12px;color:var(--ink3);margin-top:8px;font-family:var(--mono);">
+          → <a href="operators.html">View full Operators directory →</a>
+        </p>
+
+        <!-- References -->
+        <div class="section-label" id="sec-refs">References &amp; Further Reading</div>
+        <div style="border:1px solid var(--border);">
+          <ul class="ref-list" id="ref-list"></ul>
+        </div>
+
+        <!-- Pagination -->
+        <div class="cat-pagination" id="cat-pagination"></div>
+
+      </div>
+
+      <!-- TOC -->
+      <div class="toc">
+        <div class="toc-title">On this page</div>
+        <a class="toc-link" href="#sec-blocs">US &amp; CN Bloc Analysis</a>
+        <a class="toc-link" href="#sec-issues">Key Issues</a>
+        <a class="toc-link" href="#sec-actors">Operators</a>
+        <a class="toc-link" href="#sec-refs">References</a>
+      </div>
+    </div>
+
+    <div style="padding-bottom:64px;"></div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A research and advocacy tool for the digital rights community.</div>
+      <div class="footer-note">Prototype v1.0 · May 2026 · Content is indicative; verify before publishing.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">All Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="about.html">About & Data</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Key Sources</div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://citizenlab.ca" target="_blank">Citizen Lab</a>
+        <a class="footer-link" href="https://www.accessnow.org" target="_blank">Access Now</a>
+        <a class="footer-link" href="https://www.article19.org" target="_blank">Article 19</a>
+        <a class="footer-link" href="https://freedomhouse.org" target="_blank">Freedom House</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+// Get domain id from URL
+const params = new URLSearchParams(window.location.search);
+const catId = params.get('id') || DOMAINS[0].id;
+const catIdx = DOMAINS.findIndex(c => c.id === catId);
+const cat = DOMAINS[catIdx] || DOMAINS[0];
+
+// Update page title
+document.title = `${cat.title} — Between Two Stacks`;
+
+// HERO
+const urgLabels = { critical: 'Critical Priority', high: 'High Priority', medium: 'Important' };
+document.getElementById('cat-hero').innerHTML = `
+  <div class="cat-hero">
+    <div class="container">
+      <a class="breadcrumb" href="domains.html">← All Domains</a>
+      <div class="cat-hero-num">Category ${cat.num}</div>
+      <h1 class="cat-hero-title">${cat.title}</h1>
+      <p class="cat-hero-summary">${cat.summary}</p>
+    </div>
+  </div>
+`;
+
+// CATEGORY NAV
+const navEl = document.getElementById('cat-nav');
+navEl.innerHTML = `<div class="container-wide" style="display:flex;gap:2px;overflow-x:auto;padding:8px 40px;">` +
+  DOMAINS.map(c => `
+    <a class="cat-nav-link ${c.id === catId ? 'active' : ''}" href="domain.html?id=${c.id}">
+      <span class="cat-nav-num">${c.num}</span>
+      ${c.shortTitle}
+    </a>
+  `).join('') + `</div>`;
+
+// BLOC PANELS
+document.getElementById('bloc-panels').innerHTML = `
+  <div class="bloc-panel us-panel">
+    <div class="bloc-panel-hdr">
+      <span class="bloc-flag">US Bloc</span>
+      <span class="bloc-panel-title">${cat.us_bloc.heading}</span>
+    </div>
+    <div class="bloc-panel-body">
+      ${cat.us_bloc.body.map(p => `<p>${p}</p>`).join('')}
+    </div>
+  </div>
+  <div class="bloc-panel cn-panel">
+    <div class="bloc-panel-hdr">
+      <span class="bloc-flag">CN Bloc</span>
+      <span class="bloc-panel-title">${cat.cn_bloc.heading}</span>
+    </div>
+    <div class="bloc-panel-body">
+      ${cat.cn_bloc.body.map(p => `<p>${p}</p>`).join('')}
+    </div>
+  </div>
+`;
+
+// KEY ISSUES
+const issueList = document.getElementById('issue-list');
+cat.keyIssues.forEach(issue => {
+  issueList.innerHTML += `
+    <div class="issue-item">
+      <div class="issue-icon">${issue.icon}</div>
+      <div>
+        <div class="issue-title">${issue.title}</div>
+        <div class="issue-desc">${issue.desc}</div>
+      </div>
+    </div>
+  `;
+});
+
+// OPERATORS
+const actorsGrid = document.getElementById('operators-grid');
+const relActors = OPERATORS.filter(a => cat.operators && cat.operators.includes(a.id));
+
+if (relActors.length === 0) {
+  actorsGrid.innerHTML = `<div style="padding:20px;color:var(--ink3);font-size:13px;">No specific operators mapped for this domain yet. <a href="operators.html">View all operators →</a></div>`;
+} else {
+  relActors.forEach(a => {
+    actorsGrid.innerHTML += `
+      <a class="operator-mini-card" href="operators.html?id=${a.id}">
+        <span class="badge badge-${a.bloc}" style="flex-shrink:0;margin-top:2px;">${a.bloc === 'both' ? 'Both' : a.bloc.toUpperCase()}</span>
+        <div>
+          <div class="operator-mini-name">${a.name}</div>
+          <div class="operator-mini-type">${a.type}</div>
+          <div class="operator-mini-countries">📍 ${a.countries.slice(0,4).join(', ')}${a.countries.length > 4 ? ` +${a.countries.length-4} more` : ''}</div>
+        </div>
+      </a>
+    `;
+  });
+}
+
+// REFERENCES
+const refList = document.getElementById('ref-list');
+cat.references.forEach(ref => {
+  refList.innerHTML += `
+    <li class="ref-item">
+      <div class="ref-num">[${ref.num}]</div>
+      <div class="ref-body">
+        <div class="ref-title">${ref.text}</div>
+        <div class="ref-source">${ref.source}</div>
+        ${ref.url ? `<a class="ref-link" href="${ref.url}" target="_blank" rel="noopener">${ref.url}</a>` : ''}
+      </div>
+    </li>
+  `;
+});
+
+// PAGINATION
+const prevCat = catIdx > 0 ? DOMAINS[catIdx - 1] : null;
+const nextCat = catIdx < DOMAINS.length - 1 ? DOMAINS[catIdx + 1] : null;
+const pagEl = document.getElementById('cat-pagination');
+
+pagEl.innerHTML = `
+  ${prevCat ? `
+    <a class="cat-pag-btn" href="domain.html?id=${prevCat.id}">
+      <span class="cat-pag-dir">← Previous</span>
+      <span class="cat-pag-title">${prevCat.title}</span>
+    </a>
+  ` : '<div></div>'}
+  ${nextCat ? `
+    <a class="cat-pag-btn next" href="domain.html?id=${nextCat.id}">
+      <span class="cat-pag-dir">Next →</span>
+      <span class="cat-pag-title">${nextCat.title}</span>
+    </a>
+  ` : '<div></div>'}
+`;
+</script>
+</body>
+</html>

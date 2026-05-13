@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Categories — Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.cat-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr auto;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+  align-items: stretch;
+}
+.cat-row:hover { background: var(--bg2); text-decoration: none; }
+.cat-row:first-child { border-top: 1px solid var(--border); }
+
+.cat-row-num {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink4);
+  padding: 20px 20px;
+  display: flex;
+  align-items: flex-start;
+  border-right: 1px solid var(--border);
+}
+
+.cat-row-main {
+  padding: 20px 24px;
+  border-right: 1px solid var(--border);
+}
+
+.cat-row-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.cat-row-summary {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.55;
+}
+
+.cat-row-side {
+  padding: 20px 20px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+.cat-row-side-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  margin-bottom: 4px;
+}
+
+.cat-row-side-text {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.5;
+}
+
+.cat-row-cta {
+  padding: 20px 20px;
+  display: flex;
+  align-items: center;
+  color: var(--ink4);
+  font-size: 18px;
+  transition: transform 0.15s;
+}
+
+.cat-row:hover .cat-row-cta { transform: translateX(4px); color: var(--ink); }
+
+@media (max-width: 800px) {
+  .cat-row { grid-template-columns: 50px 1fr auto; }
+  .cat-row-side { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+      <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link  active" href="domains.html">Domains</a>
+    <a class="nav-link" href="operators.html">Operators</a>
+    <a class="nav-link" href="countries.html">Countries</a>
+    <a class="nav-link" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-eyebrow">Research Framework</div>
+    <h1 class="hero-title" style="font-size:clamp(28px,4vw,48px);">Eight Domains of<br>Digital Tech Power</h1>
+    <p class="hero-sub" style="font-size:16px;margin-top:14px;">Each domain covers a distinct arena of US and Chinese tech influence across ASEAN — with dual-bloc analysis, key issues for advocates, operator mapping, and references.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="section-label mt-0">All Domains</div>
+    <div id="cat-list"></div>
+    <div style="padding-bottom:64px;"></div>
+  </div>
+</main>
+
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A research and advocacy tool for the digital rights community.</div>
+      <div class="footer-note">Prototype v1.0 · May 2026 · Content is indicative; verify before publishing.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">All Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="about.html">About & Data</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Key Sources</div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://citizenlab.ca" target="_blank">Citizen Lab</a>
+        <a class="footer-link" href="https://www.accessnow.org" target="_blank">Access Now</a>
+        <a class="footer-link" href="https://www.article19.org" target="_blank">Article 19</a>
+        <a class="footer-link" href="https://freedomhouse.org" target="_blank">Freedom House</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+const tagLabels = { us: 'US Bloc', cn: 'CN Bloc', both: 'Both Blocs' };
+const urgLabels = { critical: 'Critical', high: 'High Priority', medium: 'Important' };
+const urgClasses = { critical: 'urgency-critical', high: 'urgency-high', medium: 'urgency-medium' };
+
+const list = document.getElementById('cat-list');
+
+DOMAINS.forEach(cat => {
+  const tags = cat.tags.map(t => `<span class="tag tag-${t}">${tagLabels[t]}</span>`).join(' ');
+  const urgClass = urgClasses[cat.urgency] || '';
+  const urgLabel = urgLabels[cat.urgency] || '';
+  const actorCount = cat.operators ? cat.operators.length : 0;
+
+  list.innerHTML += `
+    <a class="cat-row" href="domain.html?id=${cat.id}">
+      <div class="cat-row-num">${cat.num}</div>
+      <div class="cat-row-main">
+        <div class="cat-row-title">${cat.title}</div>
+        <div class="cat-row-summary">${cat.summary}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          ${tags}
+          <span class="cat-urgency ${urgClass}" style="font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:4px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;"></span>
+            ${urgLabel}
+          </span>
+        </div>
+      </div>
+      <div class="cat-row-side">
+        <div>
+          <div class="cat-row-side-label">Actors mapped</div>
+          <div class="cat-row-side-text">${actorCount} documented operators</div>
+        </div>
+        <div>
+          <div class="cat-row-side-label">References</div>
+          <div class="cat-row-side-text">${cat.references.length} sources</div>
+        </div>
+      </div>
+      <div class="cat-row-cta">→</div>
+    </a>
+  `;
+});
+</script>
+</body>
+</html>

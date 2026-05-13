@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── HERO ─────────────────────────────────── */
+#hero {
+  background: var(--ink);
+  color: #fff;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-left {
+  padding: 64px 48px 56px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-right {
+  padding: 48px 36px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(255,255,255,0.03);
+}
+
+.beta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.beta-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  background: var(--amber);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 2px;
+}
+
+.beta-note {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  letter-spacing: .06em;
+}
+
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(40px, 6vw, 76px);
+  font-weight: 900;
+  line-height: 1.02;
+  margin-bottom: 24px;
+  color: #fff;
+}
+
+.hero-title em { font-style: italic; color: #BBA880; }
+
+.hero-standfirst {
+  font-size: 17px;
+  line-height: 1.72;
+  color: rgba(255,255,255,0.68);
+  max-width: 560px;
+  font-weight: 300;
+  margin-bottom: 36px;
+}
+
+/* Graphic in right panel */
+.hero-graphic {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+/* Bloc indicator bars */
+.hero-blocs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.hero-bloc-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.hero-bloc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hero-bloc-names {
+  font-weight: 400;
+  color: rgba(255,255,255,0.38);
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: none;
+  font-family: var(--sans);
+  margin-left: 4px;
+}
+
+/* ── ARGUMENT SECTION ─────────────────────── */
+.argument-section {
+  background: #fff;
+  border-bottom: 3px solid var(--border);
+}
+
+.argument-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.argument-main {
+  padding: 52px 48px 52px 0;
+  border-right: 1px solid var(--border);
+}
+
+.argument-sidebar {
+  padding: 52px 0 52px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.argument-eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  margin-bottom: 14px;
+}
+
+.argument-headline {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+.argument-body {
+  font-size: 15px;
+  line-height: 1.78;
+  color: var(--ink2);
+}
+
+.argument-body p { margin-bottom: 16px; }
+.argument-body p:last-child { margin-bottom: 0; }
+.argument-body strong { color: var(--ink); font-weight: 600; }
+
+/* Pull quote */
+.pull-quote {
+  border-left: 4px solid var(--amber);
+  padding: 14px 20px;
+  background: var(--amber-bg);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink2);
+  font-style: italic;
+  margin: 24px 0;
+}
+
+/* Sidebar concept boxes */
+.concept-box {
+  padding: 0;
+}
+
+.concept-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.concept-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.concept-text {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink2);
+}
+
+/* ── DUAL BLOC STATEMENT ──────────────────── */
+.dual-bloc-strip {
+  background: var(--ink);
+  color: #fff;
+  padding: 36px 0;
+}
+
+.dual-bloc-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 1fr 3px 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.dual-bloc-divider {
+  background: rgba(255,255,255,0.1);
+  height: 100%;
+  min-height: 80px;
+}
+
+.dual-bloc-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dbs-flag {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.dbs-text {
+  font-size: 13px;
+  line-height: 1.68;
+  color: rgba(255,255,255,0.6);
+}
+
+.dbs-names {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: .04em;
+  margin-top: 4px;
+}
+
+/* ── NAV INVITATION ───────────────────────── */
+.nav-invite {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 40px 0;
+}
+
+.nav-invite-grid {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.nav-invite-item {
+  background: var(--bg);
+  padding: 22px 20px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 0.12s;
+}
+
+.nav-invite-item:hover { background: var(--bg2); text-decoration: none; }
+
+.nii-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink4);
+  letter-spacing: .08em;
+}
+
+.nii-title {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.nii-desc {
+  font-size: 12px;
+  color: var(--ink3);
+  line-height: 1.55;
+}
+
+.nii-arrow {
+  font-size: 14px;
+  color: var(--ink4);
+  margin-top: auto;
+  padding-top: 10px;
+  transition: transform 0.12s;
+}
+
+.nav-invite-item:hover .nii-arrow { transform: translateX(4px); color: var(--ink); }
+
+/* ── DOMAINS SECTION ──────────────────────── */
+.domains-section {
+  background: var(--bg);
+  padding-bottom: 64px;
+}
+
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.cat-card {
+  background: var(--bg);
+  padding: 24px 24px 20px;
+  cursor: pointer;
+  transition: background 0.12s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cat-card:hover { background: var(--bg2); text-decoration: none; }
+
+.cat-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cat-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink4);
+  letter-spacing: .12em;
+}
+
+.cat-urgency {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.urgency-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.urgency-critical .urgency-dot { background: var(--cn); }
+.urgency-high .urgency-dot { background: var(--amber); }
+.urgency-medium .urgency-dot { background: var(--ink4); }
+
+.cat-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.22;
+  color: var(--ink);
+}
+
+.cat-summary {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink2);
+  flex: 1;
+}
+
+.cat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border2);
+}
+
+.cat-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.cat-arrow { font-size: 15px; color: var(--ink4); transition: transform 0.12s, color 0.12s; }
+.cat-card:hover .cat-arrow { transform: translateX(4px); color: var(--ink); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-right { display: none; }
+  .hero-left { padding: 48px 24px 40px; }
+  .argument-inner { grid-template-columns: 1fr; }
+  .argument-main { border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 36px; }
+  .argument-sidebar { padding-left: 0; }
+  .dual-bloc-inner { grid-template-columns: 1fr; }
+  .dual-bloc-divider { display: none; }
+  .nav-invite-grid { grid-template-columns: 1fr 1fr; }
+  .cat-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .nav-invite-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+  <div class="nav-links">
+    <a class="nav-link  active" href="index.html">Home</a>
+    <a class="nav-link" href="domains.html">Domains</a>
+    <a class="nav-link" href="operators.html">Operators</a>
+    <a class="nav-link" href="countries.html">Countries</a>
+    <a class="nav-link" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-inner">
+
+    <!-- Left: Title + argument -->
+    <div class="hero-left">
+      <div class="beta-pill">
+        <span class="beta-tag">Beta</span>
+        <span class="beta-note">Prototype research tool — open for feedback</span>
+      </div>
+
+      <h1 class="hero-title">Between<br>Two <em>Stacks</em></h1>
+
+      <p class="hero-standfirst">
+        Ten nations. Two superpowers. One digital contest that most people cannot yet see. This site maps how US and Chinese technology blocs are reshaping governance, surveillance, data, and society across Southeast Asia — and who is paying the price.
+      </p>
+
+      <div class="hero-blocs">
+        <div class="hero-bloc-bar">
+          <div class="hero-bloc-dot" style="background:#4A90D9;"></div>
+          <span style="color:#4A90D9;">US / Western Bloc</span>
+          <span class="hero-bloc-names">AWS · Microsoft · Meta · Google · Palantir · NSO Group · OpenAI</span>
+        </div>
+        <div class="hero-bloc-bar">
+          <div class="hero-bloc-dot" style="background:var(--cn);"></div>
+          <span style="color:var(--cn);">Chinese Bloc</span>
+          <span class="hero-bloc-names">Huawei · Alibaba · ByteDance · Hikvision · ZTE · SenseTime · Tencent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Graphic -->
+    <div class="hero-right">
+      <svg class="hero-graphic" viewBox="0 0 340 300" role="img" aria-label="Two gravitational masses — US blue and China red — pressing on a contested amber centre zone representing ASEAN">
+        <rect width="340" height="300" fill="transparent"/>
+
+        <!-- Amber contested centre -->
+        <ellipse cx="170" cy="150" rx="62" ry="62" fill="#F5A623" opacity="0.05"/>
+        <ellipse cx="170" cy="150" rx="44" ry="44" fill="#F5A623" opacity="0.07"/>
+        <ellipse cx="170" cy="150" rx="28" ry="28" fill="#F5A623" opacity="0.09"/>
+        <ellipse cx="170" cy="150" rx="14" ry="14" fill="#F5A623" opacity="0.14"/>
+        <ellipse cx="170" cy="150" rx="5"  ry="5"  fill="#F5A623" opacity="0.25"/>
+        <ellipse cx="170" cy="150" rx="62" ry="62" fill="none" stroke="#C47A1E" stroke-width="0.5" stroke-dasharray="3,8" opacity="0.3"/>
+
+        <!-- US MASS — left, compressed inward -->
+        <ellipse cx="62" cy="150" rx="78" ry="78" fill="none" stroke="#4A90D9" stroke-width="0.3" opacity="0.07"/>
+        <ellipse cx="62" cy="150" rx="64" ry="64" fill="none" stroke="#4A90D9" stroke-width="0.4" opacity="0.10"/>
+        <ellipse cx="62" cy="150" rx="52" ry="52" fill="none" stroke="#4A90D9" stroke-width="0.5" opacity="0.15"/>
+        <ellipse cx="62" cy="150" rx="41" ry="41" fill="none" stroke="#4A90D9" stroke-width="0.65" opacity="0.22"/>
+        <ellipse cx="62" cy="150" rx="31" ry="31" fill="none" stroke="#4A90D9" stroke-width="0.85" opacity="0.32"/>
+        <ellipse cx="62" cy="150" rx="22" ry="22" fill="none" stroke="#4A90D9" stroke-width="1.1" opacity="0.45"/>
+        <ellipse cx="62" cy="150" rx="14" ry="14" fill="none" stroke="#4A90D9" stroke-width="1.5" opacity="0.62"/>
+        <ellipse cx="62" cy="150" rx="8"  ry="8"  fill="none" stroke="#4A90D9" stroke-width="2.0" opacity="0.80"/>
+        <ellipse cx="62" cy="150" rx="4"  ry="4"  fill="#4A90D9" opacity="0.90"/>
+        <ellipse cx="62" cy="150" rx="1.5" ry="1.5" fill="#4A90D9" opacity="1"/>
+        <ellipse cx="62" cy="150" rx="22" ry="22" fill="#4A90D9" opacity="0.04"/>
+        <ellipse cx="62" cy="150" rx="12" ry="12" fill="#4A90D9" opacity="0.07"/>
+
+        <!-- CN MASS — right, compressed inward -->
+        <ellipse cx="278" cy="150" rx="78" ry="78" fill="none" stroke="#DE2910" stroke-width="0.3" opacity="0.07"/>
+        <ellipse cx="278" cy="150" rx="64" ry="64" fill="none" stroke="#DE2910" stroke-width="0.4" opacity="0.10"/>
+        <ellipse cx="278" cy="150" rx="52" ry="52" fill="none" stroke="#DE2910" stroke-width="0.5" opacity="0.15"/>
+        <ellipse cx="278" cy="150" rx="41" ry="41" fill="none" stroke="#DE2910" stroke-width="0.65" opacity="0.22"/>
+        <ellipse cx="278" cy="150" rx="31" ry="31" fill="none" stroke="#DE2910" stroke-width="0.85" opacity="0.32"/>
+        <ellipse cx="278" cy="150" rx="22" ry="22" fill="none" stroke="#DE2910" stroke-width="1.1" opacity="0.45"/>
+        <ellipse cx="278" cy="150" rx="14" ry="14" fill="none" stroke="#DE2910" stroke-width="1.5" opacity="0.62"/>
+        <ellipse cx="278" cy="150" rx="8"  ry="8"  fill="none" stroke="#DE2910" stroke-width="2.0" opacity="0.80"/>
+        <ellipse cx="278" cy="150" rx="4"  ry="4"  fill="#DE2910" opacity="0.90"/>
+        <ellipse cx="278" cy="150" rx="1.5" ry="1.5" fill="#DE2910" opacity="1"/>
+        <ellipse cx="278" cy="150" rx="22" ry="22" fill="#DE2910" opacity="0.04"/>
+        <ellipse cx="278" cy="150" rx="12" ry="12" fill="#DE2910" opacity="0.07"/>
+
+        <!-- Labels -->
+        <text x="62"  y="248" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="8" font-weight="600" letter-spacing="2" fill="#4A90D9" opacity="0.7">US / WESTERN</text>
+        <text x="278" y="248" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="8" font-weight="600" letter-spacing="2" fill="#DE2910" opacity="0.7">CHINESE</text>
+        <text x="170" y="270" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="7.5" font-weight="500" letter-spacing="1.5" fill="#C47A1E" opacity="0.6">ASEAN — CONTESTED</text>
+      </svg>
+
+      <p style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.25);text-align:center;margin-top:16px;letter-spacing:.06em;line-height:1.7;">
+        Nine research domains · 40+ operators documented<br>
+        10 country profiles · 15 key individuals
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ ARGUMENT SECTION ═══════════════════════════════════ -->
+<div class="argument-section">
+  <div class="argument-inner">
+
+    <!-- Main argument -->
+    <div class="argument-main">
+      <div class="argument-eyebrow">What is happening</div>
+      <h2 class="argument-headline">A contest for the digital infrastructure of Southeast Asia</h2>
+      <div class="argument-body">
+        <p>The United States and China are competing to build, own, and govern the digital infrastructure of Southeast Asia — from undersea cables and 5G networks to AI systems, cloud platforms, and data centres. This is not neutral commerce. It is a contest for structural power over the region's governance, security, surveillance architecture, and economic future.</p>
+
+        <p>Most of this competition is invisible to the populations most affected by it. A government signs a cheaper 5G contract. A city deploys a smart surveillance system. A regulator copies a data governance law from a model provided by a foreign power. Each decision seems routine. Together, they constitute something much more significant: the slow transfer of digital sovereignty to foreign interests.</p>
+
+        <div class="pull-quote">
+          "When a government's digital infrastructure becomes so dependent on a foreign power's technology that it loses meaningful sovereignty over its own data, communications, and decisions — that is techno-capture. By the time the dependency is visible, it is usually structural."
+        </div>
+
+        <p>Southeast Asia is the most contested terrain in this competition. Ten nations — each with distinct histories, political systems, and economic relationships with both powers — are navigating a choice that is rarely framed as a choice. Some are deeply aligned with one bloc. Some are skillfully hedging between both. Some have been captured by one side without making an explicit decision to be. The patterns matter, and they deserve systematic documentation.</p>
+      </div>
+    </div>
+
+    <!-- Sidebar concepts -->
+    <div class="argument-sidebar">
+
+      <div class="concept-box">
+        <div class="concept-label" style="color:var(--us);">Tech colonialism</div>
+        <div class="concept-text">Both blocs export not just products but governance models — legal frameworks, technical standards, and norms about what states can do with digital infrastructure and who has access to it. When these models are adopted under financial or political pressure, the result is a form of digital colonialism: the rules of the digital economy are written elsewhere and imposed here.</div>
+      </div>
+
+      <div class="concept-box">
+        <div class="concept-label" style="color:var(--cn);">The dual-bloc problem</div>
+        <div class="concept-text">Most analysis of tech power in ASEAN frames China as the threat and the US as the solution — or vice versa. This tool applies the same accountability standards to both blocs. US platforms have enabled atrocities. Chinese infrastructure has enabled authoritarianism. Both blocs' legal frameworks assert extraterritorial jurisdiction over ASEAN data. Neither deserves a free pass.</div>
+      </div>
+
+      <div class="concept-box">
+        <div class="concept-label" style="color:var(--amber);">Why this tool exists</div>
+        <div class="concept-text">Researchers, policy makers, and digital rights advocates need a structured, referenced, dual-bloc view of what is being built, by whom, in which countries, and to what effect. This prototype attempts to provide that — as a starting point, openly for feedback, with all data editable and all sources cited.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ DUAL BLOC STRIP ════════════════════════════════════ -->
+<div class="dual-bloc-strip">
+  <div class="dual-bloc-inner">
+    <div class="dual-bloc-side">
+      <div class="dbs-flag" style="color:#4A90D9;">US / Western Bloc</div>
+      <div class="dbs-text">Cloud infrastructure embedded in government workflows. Platforms shaping political discourse with minimal local accountability. Spyware sold to governments targeting their own populations. Military-AI integration reshaping the security architecture of the Indo-Pacific.</div>
+      <div class="dbs-names">AWS · Microsoft · Google · Meta · Palantir · NSO Group · OpenAI · L3Harris · Anduril</div>
+    </div>
+    <div class="dual-bloc-divider"></div>
+    <div class="dual-bloc-side">
+      <div class="dbs-flag" style="color:var(--cn);">Chinese Bloc</div>
+      <div class="dbs-text">5G infrastructure bundled with surveillance systems. Social media algorithms designed in Beijing shaping what hundreds of millions see. Data centres subject to Chinese intelligence law. Governance models exported alongside hardware contracts.</div>
+      <div class="dbs-names">Huawei · Alibaba · ByteDance · Hikvision · ZTE · SenseTime · CloudWalk · Tencent · Baidu</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAVIGATION INVITATION ══════════════════════════════ -->
+<div class="nav-invite">
+  <div style="max-width:1160px;margin:0 auto;padding:0 40px 28px;">
+    <div class="section-label" style="padding-top:0;">Explore the research</div>
+  </div>
+  <div class="nav-invite-grid">
+    <a class="nav-invite-item" href="domains.html">
+      <div class="nii-num">01 — 09</div>
+      <div class="nii-title">Domains</div>
+      <div class="nii-desc">Nine arenas of US-China tech contest — from surveillance infrastructure to AI governance to digital trade law. Each domain shows both blocs' role and key issues for advocates.</div>
+      <div class="nii-arrow">→</div>
+    </a>
+    <a class="nav-invite-item" href="operators.html">
+      <div class="nii-num">40+</div>
+      <div class="nii-title">Operators</div>
+      <div class="nii-desc">Companies, platforms, agencies, and institutions from both blocs. Threat mechanisms, power vectors, affected communities, and accountability gaps — all documented.</div>
+      <div class="nii-arrow">→</div>
+    </a>
+    <a class="nav-invite-item" href="countries.html">
+      <div class="nii-num">10</div>
+      <div class="nii-title">Countries</div>
+      <div class="nii-desc">Profiles of each ASEAN state — their alignment, digital rights context, key legislation, and exposure to each bloc's technology. From Cambodia's capture to Singapore's deliberate hedge.</div>
+      <div class="nii-arrow">→</div>
+    </a>
+    <a class="nav-invite-item" href="people.html">
+      <div class="nii-num">15</div>
+      <div class="nii-title">People &amp; Power</div>
+      <div class="nii-desc">The architects, operators, and political enablers whose specific decisions shape how tech power works. From Peter Thiel to Prabowo Subianto — with connections throughout.</div>
+      <div class="nii-arrow">→</div>
+    </a>
+    <a class="nav-invite-item" href="map.html">
+      <div class="nii-num">119</div>
+      <div class="nii-title">Network Map</div>
+      <div class="nii-desc">An interactive network visualising connections between tech operators and ASEAN nations. Click any node to explore its relationships and jump to its full profile.</div>
+      <div class="nii-arrow">→</div>
+    </a>
+  </div>
+</div>
+
+<!-- ══ NINE DOMAINS ═══════════════════════════════════════ -->
+<div class="domains-section">
+  <div class="container">
+    <div class="section-label">Nine Research Domains</div>
+    <div class="cat-grid" id="domain-grid"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A prototype research tool for the digital rights community.</div>
+      <div class="footer-note">
+        Beta — open for feedback · May 2026 · Content is indicative; verify before publishing.<br>
+        All data is in data.js — edit freely and redistribute.
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="people.html">People &amp; Power</a>
+        <a class="footer-link" href="map.html">Network Map</a>
+        <a class="footer-link" href="about.html">About &amp; Data</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Key Sources</div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://citizenlab.ca" target="_blank">Citizen Lab</a>
+        <a class="footer-link" href="https://www.accessnow.org" target="_blank">Access Now</a>
+        <a class="footer-link" href="https://www.article19.org" target="_blank">Article 19</a>
+        <a class="footer-link" href="https://freedomhouse.org" target="_blank">Freedom House</a>
+        <a class="footer-link" href="https://carnegieendowment.org" target="_blank">Carnegie Endowment</a>
+        <a class="footer-link" href="https://csis.org" target="_blank">CSIS</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+const urgencyLabels = { critical:'Critical', high:'High Priority', medium:'Important' };
+const urgencyColors = { critical:'urgency-critical', high:'urgency-high', medium:'urgency-medium' };
+const tagLabels     = { us:'US Bloc', cn:'CN Bloc', both:'Both Blocs' };
+const grid = document.getElementById('domain-grid');
+
+DOMAINS.forEach(cat => {
+  const tags = cat.tags.map(t => `<span class="tag tag-${t}">${tagLabels[t]}</span>`).join('');
+  const urgClass = urgencyColors[cat.urgency] || 'urgency-medium';
+  const urgLabel = urgencyLabels[cat.urgency] || cat.urgency;
+  grid.innerHTML += `
+    <a class="cat-card" href="domain.html?id=${cat.id}">
+      <div class="cat-card-top">
+        <span class="cat-num">${cat.num}</span>
+        <span class="cat-urgency ${urgClass}">
+          <span class="urgency-dot"></span>${urgLabel}
+        </span>
+      </div>
+      <div class="cat-title">${cat.title}</div>
+      <div class="cat-summary">${cat.summary}</div>
+      <div class="cat-footer">
+        <div class="cat-tags">${tags}</div>
+        <span class="cat-arrow">→</span>
+      </div>
+    </a>`;
+});
+</script>
+</body>
+</html>

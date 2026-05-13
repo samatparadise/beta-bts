@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operators — Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.operators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.operator-card {
+  background: var(--bg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background 0.12s;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.operator-card:hover { background: var(--bg2); }
+.operator-card.highlighted { background: var(--amber-bg); outline: 2px solid var(--amber); }
+
+.operator-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.actor-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.actor-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+}
+
+.actor-desc {
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.55;
+}
+
+.actor-countries {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.04em;
+}
+
+.actor-ref-link {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--us);
+  word-break: break-all;
+}
+
+/* Detail panel */
+#detail-panel {
+  position: fixed;
+  top: var(--nav-h);
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  background: #fff;
+  border-left: 2px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 100;
+}
+
+#detail-panel.open { transform: translateX(0); }
+
+#detail-panel-inner { padding: 28px 28px 48px; }
+
+.panel-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--ink3);
+  line-height: 1;
+}
+
+.panel-close:hover { background: var(--bg3); color: var(--ink); }
+
+.panel-bloc {
+  margin-bottom: 8px;
+}
+
+.panel-name {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.2;
+  padding-right: 40px;
+}
+
+.panel-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.panel-desc {
+  font-size: 13.5px;
+  line-height: 1.68;
+  color: var(--ink2);
+  margin-bottom: 20px;
+}
+
+.panel-field-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  margin-bottom: 6px;
+  margin-top: 16px;
+}
+
+.panel-countries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.country-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--ink2);
+}
+
+.panel-ref {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--us);
+  word-break: break-all;
+  display: block;
+  margin-top: 4px;
+}
+
+.panel-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panel-cat-link {
+  font-size: 13px;
+  color: var(--us);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel-cat-link:hover { text-decoration: underline; }
+
+/* Results count */
+.results-bar {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  padding: 10px 0 4px;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 700px) {
+  #detail-panel { width: 100%; }
+  .operators-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+      <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="domains.html">Domains</a>
+    <a class="nav-link  active" href="operators.html">Operators</a>
+    <a class="nav-link" href="countries.html">Countries</a>
+    <a class="nav-link" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-eyebrow">Operator Directory</div>
+    <h1 class="hero-title" style="font-size:clamp(28px,4vw,48px);">Operators &amp; Organisations</h1>
+    <p class="hero-sub" style="font-size:16px;margin-top:14px;">Companies, platforms, agencies, and institutions from both blocs operating across ASEAN. Click any operator for full details including threat mechanism, power vectors, affected communities, and accountability gaps.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <!-- Filters -->
+    <div class="filter-bar" style="padding-top:24px;">
+      <span class="filter-label">Bloc:</span>
+      <button class="filter-btn active" data-filter="bloc" data-value="all" onclick="applyFilter(this)">All</button>
+      <button class="filter-btn us" data-filter="bloc" data-value="us" onclick="applyFilter(this)">US / Western</button>
+      <button class="filter-btn cn" data-filter="bloc" data-value="cn" onclick="applyFilter(this)">Chinese</button>
+      <button class="filter-btn" data-filter="bloc" data-value="both" onclick="applyFilter(this)">Both</button>
+      <span class="filter-label" style="margin-left:16px;">Type:</span>
+      <button class="filter-btn active" data-filter="type" data-value="all" onclick="applyFilter(this)">All Types</button>
+      <button class="filter-btn" data-filter="type" data-value="Surveillance" onclick="applyFilter(this)">Surveillance</button>
+      <button class="filter-btn" data-filter="type" data-value="Platform" onclick="applyFilter(this)">Platforms</button>
+      <button class="filter-btn" data-filter="type" data-value="Cloud" onclick="applyFilter(this)">Cloud</button>
+      <button class="filter-btn" data-filter="type" data-value="AI" onclick="applyFilter(this)">AI</button>
+      <button class="filter-btn" data-filter="type" data-value="Fintech" onclick="applyFilter(this)">Fintech</button>
+      <input class="search-input" type="text" placeholder="Search operators…" id="search-input" oninput="applyFilters()">
+    </div>
+
+    <div class="results-bar" id="results-bar"></div>
+
+    <div class="operators-grid" id="operators-grid"></div>
+    <div style="padding-bottom:64px;"></div>
+  </div>
+</main>
+
+<!-- DETAIL PANEL -->
+<div id="detail-panel">
+  <div id="detail-panel-inner">
+    <button class="panel-close" onclick="closePanel()">×</button>
+    <div id="panel-content"></div>
+  </div>
+</div>
+
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A research and advocacy tool for the digital rights community.</div>
+      <div class="footer-note">Prototype v1.0 · May 2026 · Content is indicative; verify before publishing.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">All Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="about.html">About & Data</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Data</div>
+      <div class="footer-links">
+        <a class="footer-link" href="data.js" target="_blank">data.js (raw)</a>
+        <a class="footer-link" href="about.html">How to contribute</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+let activeFilters = { bloc: 'all', type: 'all' };
+let selectedActor = null;
+
+// Check URL for highlighted actor
+const params = new URLSearchParams(window.location.search);
+const highlightId = params.get('id');
+
+function renderActors(actors) {
+  const grid = document.getElementById('operators-grid');
+  document.getElementById('results-bar').textContent = `${actors.length} actors`;
+
+  if (actors.length === 0) {
+    grid.innerHTML = `<div style="padding:32px;color:var(--ink3);font-size:13px;grid-column:1/-1;">No actors match your filters.</div>`;
+    return;
+  }
+
+  grid.innerHTML = actors.map(a => `
+    <button class="operator-card ${highlightId === a.id ? 'highlighted' : ''}" onclick="showActor('${a.id}')">
+      <div class="operator-card-top">
+        <div>
+          <div class="actor-name">${a.name}</div>
+          <div class="actor-type">${a.type} · HQ: ${a.hq}</div>
+        </div>
+        <span class="badge badge-${a.bloc}">${a.bloc === 'both' ? 'Both' : a.bloc.toUpperCase()}</span>
+      </div>
+      <div class="actor-desc">${a.desc}</div>
+      <div class="actor-countries">📍 ${a.countries.slice(0,5).join(', ')}${a.countries.length > 5 ? ` +${a.countries.length-5}` : ''}</div>
+    </button>
+  `).join('');
+
+  // Auto-open if URL specifies actor
+  if (highlightId) {
+    const a = OPERATORS.find(a => a.id === highlightId);
+    if (a) showActor(a.id);
+  }
+}
+
+function applyFilters() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const filtered = OPERATORS.filter(a => {
+    const blocOk = activeFilters.bloc === 'all' || a.bloc === activeFilters.bloc;
+    const typeOk = activeFilters.type === 'all' || a.type.toLowerCase().includes(activeFilters.type.toLowerCase());
+    const searchOk = !search ||
+      a.name.toLowerCase().includes(search) ||
+      a.desc.toLowerCase().includes(search) ||
+      a.type.toLowerCase().includes(search) ||
+      a.countries.some(c => c.toLowerCase().includes(search));
+    return blocOk && typeOk && searchOk;
+  });
+  renderActors(filtered);
+}
+
+function applyFilter(btn) {
+  const filter = btn.dataset.filter;
+  const value = btn.dataset.value;
+  activeFilters[filter] = value;
+
+  // Update active state
+  document.querySelectorAll(`[data-filter="${filter}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function showActor(id) {
+  const a = OPERATORS.find(a => a.id === id);
+  if (!a) return;
+  selectedActor = id;
+
+  // Find domains this operator appears in
+  const relCats = DOMAINS.filter(c => c.operators && c.operators.includes(id));
+
+  const blocColor = a.bloc === 'us' ? 'var(--us)' : a.bloc === 'cn' ? 'var(--cn)' : 'var(--amber)';
+  const blocLabel = a.bloc === 'us' ? 'US / Western Bloc' : a.bloc === 'cn' ? 'Chinese Bloc' : 'Both Blocs';
+
+  document.getElementById('panel-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-${a.bloc}">${a.bloc === 'both' ? 'Both' : a.bloc.toUpperCase()}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.08em;">${a.type}</span>
+    </div>
+    <div class="panel-name">${a.name}</div>
+    <div class="panel-type">HQ: ${a.hq} &nbsp;·&nbsp; ${blocLabel}</div>
+    <div class="panel-desc" style="margin-top:10px;">${a.desc}</div>
+
+    ${a.threat ? `
+      <div class="panel-section-label" style="color:var(--cn);border-color:var(--cn-bg);margin-top:14px;">Threat mechanism</div>
+      <div style="font-size:13px;line-height:1.68;color:var(--ink2);padding:10px 12px;background:var(--cn-bg);border-left:3px solid var(--cn);margin-bottom:6px;border-radius:0 3px 3px 0;">${a.threat}</div>
+    ` : ''}
+
+    ${a.power ? `
+      <div class="panel-section-label" style="margin-top:10px;">Power vectors</div>
+      <div style="font-size:12.5px;line-height:1.62;color:var(--ink2);padding:10px 12px;background:var(--bg2);border-left:3px solid var(--border);margin-bottom:6px;">${a.power}</div>
+    ` : ''}
+
+    ${a.affectedCommunities ? `
+      <div class="panel-section-label" style="margin-top:10px;">Affected communities</div>
+      <div style="font-size:12.5px;line-height:1.62;color:var(--ink2);padding:10px 12px;background:#FFF8F0;border-left:3px solid var(--amber);margin-bottom:6px;">${a.affectedCommunities}</div>
+    ` : ''}
+
+    ${a.accountability ? `
+      <div class="panel-section-label" style="margin-top:10px;">Accountability gaps</div>
+      <div style="font-size:12.5px;line-height:1.62;color:var(--ink2);padding:10px 12px;background:var(--bg2);border-left:3px solid var(--border);margin-bottom:6px;">${a.accountability}</div>
+    ` : ''}
+
+    ${a.keyEvidence ? `
+      <div class="panel-section-label" style="margin-top:10px;">Key evidence</div>
+      <div style="font-size:12px;line-height:1.6;color:var(--ink3);padding:10px 12px;background:var(--bg2);border-left:3px solid var(--border);font-style:italic;margin-bottom:6px;">${a.keyEvidence}</div>
+    ` : ''}
+
+    <div class="panel-section-label" style="margin-top:10px;">ASEAN countries / regions</div>
+    <div class="panel-countries">
+      ${a.countries.map(c => `<span class="country-tag">${c}</span>`).join('')}
+    </div>
+
+    ${relCats.length > 0 ? `
+      <div class="panel-section-label" style="margin-top:10px;">Appears in domains</div>
+      <div class="panel-cats">
+        ${relCats.map(c => `
+          <a class="panel-cat-link" href="domain.html?id=${c.id}">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--ink4);">${c.num}</span>
+            ${c.title}
+          </a>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    ${a.ref ? `
+      <div class="panel-section-label" style="margin-top:10px;">Key reference</div>
+      <a class="panel-ref" href="${a.ref}" target="_blank" rel="noopener">${a.ref}</a>
+    ` : ''}
+  `;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  selectedActor = null;
+}
+
+// Click outside panel to close
+document.addEventListener('click', e => {
+  const panel = document.getElementById('detail-panel');
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !e.target.closest('.operator-card')) {
+    closePanel();
+  }
+});
+
+// Initial render
+renderActors(OPERATORS);
+</script>
+</body>
+</html>

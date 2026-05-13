@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countries — Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.country-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.country-card {
+  background: var(--bg);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.country-card:hover { background: var(--bg2); }
+
+.country-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.country-flag { font-size: 26px; line-height: 1; }
+
+.country-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lean-pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.lean-us   { background: var(--us-bg);    color: var(--us); }
+.lean-cn   { background: var(--cn-bg);    color: var(--cn); }
+.lean-hedge{ background: var(--amber-bg); color: var(--amber); }
+
+.country-desc {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.58;
+}
+
+.country-presence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.presence-box {
+  padding: 8px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.presence-box.us { background: var(--us-bg); }
+.presence-box.cn { background: var(--cn-bg); }
+
+.presence-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.presence-box.us .presence-label { color: var(--us); }
+.presence-box.cn .presence-label { color: var(--cn); }
+.presence-text { color: var(--ink2); }
+
+.country-law {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  padding: 6px 10px;
+  background: var(--bg2);
+  border-left: 3px solid var(--border);
+}
+
+/* Detail panel */
+#country-panel {
+  position: fixed;
+  top: var(--nav-h);
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  background: #fff;
+  border-left: 2px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 100;
+}
+
+#country-panel.open { transform: translateX(0); }
+#country-panel-inner { padding: 28px 28px 48px; }
+
+.panel-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--ink3);
+  line-height: 1;
+}
+
+.panel-close:hover { background: var(--bg3); }
+
+.panel-flag { font-size: 40px; margin-bottom: 8px; }
+.panel-name { font-family: var(--serif); font-size: 26px; font-weight: 900; margin-bottom: 4px; }
+.panel-lean { margin-bottom: 16px; }
+.panel-desc { font-size: 13.5px; line-height: 1.7; color: var(--ink2); margin-bottom: 20px; }
+
+.panel-section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  margin: 16px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-presence-us {
+  background: var(--us-bg);
+  border-left: 3px solid var(--us);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.55;
+  margin-bottom: 6px;
+}
+
+.panel-presence-cn {
+  background: var(--cn-bg);
+  border-left: 3px solid var(--cn);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.55;
+}
+
+.panel-law {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink2);
+  background: var(--bg2);
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+
+.panel-refs { display: flex; flex-direction: column; gap: 4px; }
+.panel-ref-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--us);
+  word-break: break-all;
+}
+
+/* Alignment summary bar */
+.align-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 3px;
+}
+
+.align-item {
+  background: var(--bg2);
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.align-n {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.align-n.us   { color: var(--us); }
+.align-n.cn   { color: var(--cn); }
+.align-n.hedge{ color: var(--amber); }
+
+.align-l {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+@media (max-width: 700px) {
+  #country-panel { width: 100%; }
+  .country-grid { grid-template-columns: 1fr; }
+  .country-presence { grid-template-columns: 1fr; }
+  .align-bar { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+      <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="domains.html">Domains</a>
+    <a class="nav-link" href="operators.html">Operators</a>
+    <a class="nav-link  active" href="countries.html">Countries</a>
+    <a class="nav-link" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-eyebrow">Country Profiles</div>
+    <h1 class="hero-title" style="font-size:clamp(28px,4vw,48px);">Ten Nations,<br>Ten Calculations</h1>
+    <p class="hero-sub" style="font-size:16px;margin-top:14px;">Each ASEAN state navigates US-China tech rivalry differently — based on debt exposure, trade dependency, historical ties, and domestic political alignment. Click any country for full profile.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+    <div class="section-label mt-0">Alignment Overview</div>
+    <p style="font-size:14px;color:var(--ink2);line-height:1.7;max-width:780px;margin-bottom:20px;">
+      Each ASEAN state is assessed across three dimensions: <strong>security relationships</strong> (military alliances, intelligence sharing, defence procurement), <strong>digital infrastructure</strong> (which bloc's cloud, 5G, and surveillance technology dominates), and <strong>governance norms</strong> (which bloc's legal and regulatory model shapes domestic digital law). Alignment scores reflect a synthesis of these dimensions — not a single measure. They are analytical assessments, not official designations, and they change over time.
+      <span style="display:block;margin-top:8px;color:var(--ink3);">
+        <strong style="color:var(--us)">US-Aligned:</strong> Strong security ties and dominant Western digital infrastructure.&nbsp;&nbsp;
+        <strong style="color:var(--amber)">Hedge:</strong> Active dual-engagement with both blocs; maintains strategic ambiguity.&nbsp;&nbsp;
+        <strong style="color:var(--cn)">CN-Aligned / Dependent:</strong> Chinese infrastructure dominance, governance norm convergence, or structural debt dependency.
+      </span>
+    </p>
+    <div class="align-bar">
+      <div class="align-item">
+        <div class="align-n us" id="count-us">0</div>
+        <div class="align-l">US-Aligned</div>
+      </div>
+      <div class="align-item">
+        <div class="align-n hedge" id="count-hedge">0</div>
+        <div class="align-l">Strategic Hedgers</div>
+      </div>
+      <div class="align-item">
+        <div class="align-n cn" id="count-cn">0</div>
+        <div class="align-l">China-Aligned / Dependent</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--ink4);font-family:var(--mono);letter-spacing:0.06em;margin:8px 0 0;">
+      Click any country card for full profile including alignment reasoning, digital rights context, and key legislation.
+    </p>
+
+    <div class="section-label">All Countries</div>
+    <div class="country-grid" id="country-grid"></div>
+
+    <div style="padding-bottom:64px;"></div>
+  </div>
+</main>
+
+<!-- COUNTRY PANEL -->
+<div id="country-panel">
+  <div id="country-panel-inner">
+    <button class="panel-close" onclick="closePanel()">×</button>
+    <div id="country-panel-content"></div>
+  </div>
+</div>
+
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A research and advocacy tool for the digital rights community.</div>
+      <div class="footer-note">Prototype v1.0 · May 2026 · Alignments are analytical assessments, not official designations.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">All Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="about.html">About & Data</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Key Sources</div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://freedomhouse.org" target="_blank">Freedom House</a>
+        <a class="footer-link" href="https://www.accessnow.org" target="_blank">Access Now</a>
+        <a class="footer-link" href="https://eastasiaforum.org" target="_blank">East Asia Forum</a>
+        <a class="footer-link" href="https://csis.org" target="_blank">CSIS</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+const leanLabels = { us: 'US-Aligned', cn: 'China-Aligned', hedge: 'Strategic Hedger' };
+
+// Counts
+const usCt   = COUNTRIES.filter(c => c.lean === 'us').length;
+const cnCt   = COUNTRIES.filter(c => c.lean === 'cn').length;
+const hedgeCt= COUNTRIES.filter(c => c.lean === 'hedge').length;
+document.getElementById('count-us').textContent = usCt;
+document.getElementById('count-cn').textContent = cnCt;
+document.getElementById('count-hedge').textContent = hedgeCt;
+
+function showCountry(id) {
+  const c = COUNTRIES.find(c => c.id === id);
+  if (!c) return;
+
+  // Format desc with paragraphs
+  const descHtml = c.desc.split('\n\n').map(p => `<p style="margin-bottom:10px;font-size:13.5px;line-height:1.7;color:var(--ink2);">${p}</p>`).join('');
+
+  document.getElementById('country-panel-content').innerHTML = `
+    <div class="panel-flag">${c.flag}</div>
+    <div class="panel-name">${c.name}</div>
+    <div class="panel-lean"><span class="lean-pill lean-${c.lean}">${c.leanLabel}</span></div>
+    ${descHtml}
+
+    <div class="panel-section-label">US Bloc Presence</div>
+    <div class="panel-presence-us">${c.usPresence}</div>
+
+    <div class="panel-section-label">Chinese Bloc Presence</div>
+    <div class="panel-presence-cn">${c.cnPresence}</div>
+
+    ${c.digitalRightsContext ? `
+      <div class="panel-section-label" style="color:var(--cn)">⚠ Digital Rights Context</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--ink2);padding:10px 12px;background:var(--cn-bg);border-left:3px solid var(--cn);margin-bottom:4px;">${c.digitalRightsContext}</div>
+    ` : ''}
+
+    ${c.alignmentReasoning ? `
+      <div class="panel-section-label">Alignment Reasoning</div>
+      <div style="font-size:12.5px;line-height:1.6;color:var(--ink2);padding:10px 12px;background:var(--amber-bg);border-left:3px solid var(--amber-bright);">${c.alignmentReasoning}</div>
+    ` : ''}
+
+    <div class="panel-section-label">Key Legislation</div>
+    <div class="panel-law">${c.keyLaw}</div>
+
+    ${c.refs && c.refs.length > 0 ? `
+      <div class="panel-section-label">References</div>
+      <div class="panel-refs">
+        ${c.refs.map(r => `<a class="panel-ref-link" href="${r}" target="_blank" rel="noopener">${r}</a>`).join('')}
+      </div>
+    ` : ''}
+  `;
+
+  document.getElementById('country-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('country-panel').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('country-panel');
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !e.target.closest('.country-card')) {
+    closePanel();
+  }
+});
+
+// Render cards
+const grid = document.getElementById('country-grid');
+
+COUNTRIES.forEach(c => {
+  grid.innerHTML += `
+    <button class="country-card" onclick="showCountry('${c.id}')">
+      <div class="country-card-top">
+        <span class="country-flag">${c.flag}</span>
+        <span class="country-name">${c.name}</span>
+        <span class="lean-pill lean-${c.lean}">${c.leanLabel}</span>
+      </div>
+      <div class="country-desc">${c.desc.slice(0, 180)}…</div>
+      <div class="country-presence">
+        <div class="presence-box us">
+          <div class="presence-label">US Bloc</div>
+          <div class="presence-text">${c.usPresence.split('—')[0].trim()}</div>
+        </div>
+        <div class="presence-box cn">
+          <div class="presence-label">CN Bloc</div>
+          <div class="presence-text">${c.cnPresence.split('—')[0].trim()}</div>
+        </div>
+      </div>
+      <div class="country-law">⚖ ${c.keyLaw}</div>
+    </button>
+  `;
+});
+</script>
+</body>
+</html>

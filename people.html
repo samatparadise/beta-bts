@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>People & Power — Between Two Stacks</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── PEOPLE PAGE ─────────────────────────────── */
+.people-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 3px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.person-card {
+  background: var(--bg);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.person-card:hover { background: var(--bg2); }
+
+.person-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.person-name {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.person-role {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink3);
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.person-summary {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.58;
+  flex: 1;
+}
+
+.cat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cat-architect { background: var(--purple-bg); color: var(--purple); }
+.cat-operator  { background: var(--teal-bg);   color: var(--teal); }
+.cat-enabler   { background: var(--amber-bg);  color: var(--amber); }
+
+/* Detail panel */
+#person-panel {
+  position: fixed;
+  top: var(--nav-h);
+  right: 0;
+  bottom: 0;
+  width: 440px;
+  background: #fff;
+  border-left: 2px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 100;
+}
+#person-panel.open { transform: translateX(0); }
+#person-panel-inner { padding: 28px 30px 64px; }
+
+.panel-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; color: var(--ink3); line-height: 1;
+}
+.panel-close:hover { background: var(--bg3); }
+
+.panel-cat-badge {
+  margin-bottom: 10px;
+}
+
+.panel-person-name {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 4px;
+  padding-right: 36px;
+}
+
+.panel-person-role {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink3);
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.panel-section {
+  margin-top: 16px;
+}
+
+.panel-section-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink4);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.panel-text {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink2);
+}
+
+.panel-decisions {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink2);
+  padding: 10px 12px;
+  background: var(--bg2);
+  border-left: 3px solid var(--border);
+}
+
+.connections-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.conn-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.conn-tag:hover { opacity: 0.75; text-decoration: none; }
+.conn-tag-operator { background: var(--us-bg); color: var(--us); }
+.conn-tag-domain   { background: var(--amber-bg); color: var(--amber); }
+.conn-tag-country  { background: var(--bg3); color: var(--ink3); border: 1px solid var(--border); }
+
+.panel-ref-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.panel-ref-item {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink3);
+}
+
+.panel-ref-item a {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--us);
+  word-break: break-all;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Category section headers */
+.cat-section-header {
+  padding: 36px 0 6px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.cat-section-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cat-section-desc {
+  font-size: 13px;
+  color: var(--ink3);
+  line-height: 1.55;
+  max-width: 680px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 700px) {
+  #person-panel { width: 100%; }
+  .people-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="nav-brand" href="index.html">
+    <div class="nav-brand-dot"></div>
+    Between Two Stacks
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="nav-link" href="domains.html">Domains</a>
+    <a class="nav-link" href="operators.html">Operators</a>
+    <a class="nav-link" href="countries.html">Countries</a>
+    <a class="nav-link active" href="people.html">People &amp; Power</a>
+    <a class="nav-link" href="map.html">Network Map</a>
+    <a class="nav-link" href="about.html">About &amp; Data</a>
+  </div>
+  <div class="nav-pills">
+    <span class="nav-pill us">US Bloc</span>
+    <span class="nav-pill cn">CN Bloc</span>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-eyebrow">Individuals &amp; Influence</div>
+    <h1 class="hero-title" style="font-size:clamp(28px,4vw,48px);">People &amp; Power</h1>
+    <p class="hero-sub" style="font-size:16px;margin-top:14px;">
+      Tech infrastructure doesn't build itself. These are the specific individuals whose decisions, ideologies, and movements shape how US and Chinese tech power operates across Southeast Asia. Click any person to explore their connections to Operators, Domains, and Countries across this site.
+    </p>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+
+    <!-- Architects -->
+    <div class="cat-section-header">
+      <span class="cat-section-title">Architects</span>
+      <span class="cat-label cat-architect">Category 1</span>
+    </div>
+    <p class="cat-section-desc">People who designed the ideological or structural frameworks that govern how tech power operates. Their intellectual and institutional work creates the conditions within which everything else happens.</p>
+    <div class="people-grid" id="grid-architect"></div>
+
+    <!-- Operators of Influence -->
+    <div class="cat-section-header">
+      <span class="cat-section-title">Operators of Influence</span>
+      <span class="cat-label cat-operator">Category 2</span>
+    </div>
+    <p class="cat-section-desc">Executives and founders whose companies are the primary instruments of tech power. They run the machines. Their individual decisions — on export compliance, political alignment, corporate structure — have direct consequences for ASEAN.</p>
+    <div class="people-grid" id="grid-operator"></div>
+
+    <!-- Political Enablers -->
+    <div class="cat-section-header">
+      <span class="cat-section-title">Political Enablers</span>
+      <span class="cat-label cat-enabler">Category 3</span>
+    </div>
+    <p class="cat-section-desc">Political leaders who have made decisions — through strategic choice, pragmatic constraint, or structural capture — that have opened their countries to deep tech penetration by one or both blocs. Alignment assessments are analytical judgements based on documented policy decisions. They change over time.</p>
+    <div class="people-grid" id="grid-enabler"></div>
+
+    <div style="padding-bottom:64px;"></div>
+  </div>
+</main>
+
+<!-- DETAIL PANEL -->
+<div id="person-panel">
+  <div id="person-panel-inner">
+    <button class="panel-close" onclick="closePanel()">×</button>
+    <div id="person-panel-content"></div>
+  </div>
+</div>
+
+<footer id="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Between Two Stacks</div>
+      <div>A prototype research tool for the digital rights community.</div>
+      <div class="footer-note">Beta — prototype open for feedback · May 2026 · Assessments are analytical, not accusatory.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <div class="footer-links">
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="domains.html">Domains</a>
+        <a class="footer-link" href="operators.html">Operators</a>
+        <a class="footer-link" href="countries.html">Countries</a>
+        <a class="footer-link" href="map.html">Network Map</a>
+        <a class="footer-link" href="about.html">About &amp; Data</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Key Sources</div>
+      <div class="footer-links">
+        <a class="footer-link" href="https://citizenlab.ca" target="_blank">Citizen Lab</a>
+        <a class="footer-link" href="https://www.accessnow.org" target="_blank">Access Now</a>
+        <a class="footer-link" href="https://freedomhouse.org" target="_blank">Freedom House</a>
+        <a class="footer-link" href="https://eastasiaforum.org" target="_blank">East Asia Forum</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+const CAT_LABELS = {
+  architect: 'Architect',
+  operator:  'Operator of Influence',
+  enabler:   'Political Enabler'
+};
+
+const BLOC_LABELS = {
+  us:   'US / Western Bloc',
+  cn:   'Chinese Bloc',
+  both: 'Both Blocs',
+  asean:'ASEAN-origin'
+};
+
+// Domain id -> title lookup
+const domainTitles = {};
+if (typeof DOMAINS !== 'undefined') {
+  DOMAINS.forEach(d => { domainTitles[d.id] = d.shortTitle || d.title; });
+}
+
+// Operator id -> name lookup
+const opNames = {};
+if (typeof OPERATORS !== 'undefined') {
+  OPERATORS.forEach(o => { opNames[o.id] = o.name; });
+}
+
+// Country id -> name lookup
+const countryNames = {};
+if (typeof COUNTRIES !== 'undefined') {
+  COUNTRIES.forEach(co => { countryNames[co.id] = co.flag + ' ' + co.name; });
+}
+// Also handle map node ids like kh_n -> kh
+const nodeToCountry = {};
+if (typeof COUNTRIES !== 'undefined') {
+  COUNTRIES.forEach(co => { nodeToCountry[co.id + '_n'] = co; });
+}
+
+function renderCard(p) {
+  return `
+    <button class="person-card" onclick="showPerson('${p.id}')">
+      <div class="person-card-top">
+        <div>
+          <div class="person-name">${p.name}</div>
+          <div class="person-role">${p.role}</div>
+        </div>
+        <span class="cat-label cat-${p.category}">${CAT_LABELS[p.category]}</span>
+      </div>
+      <div class="person-summary">${p.summary}</div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:4px;padding-top:10px;border-top:1px solid var(--border2);">
+        <span class="badge badge-${p.bloc === 'both' || p.bloc === 'asean' ? 'both' : p.bloc}">
+          ${p.bloc === 'both' ? 'Both' : p.bloc === 'asean' ? 'ASEAN' : p.bloc.toUpperCase()}
+        </span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--ink4);">${BLOC_LABELS[p.bloc]}</span>
+      </div>
+    </button>
+  `;
+}
+
+// Render by category
+['architect','operator','enabler'].forEach(cat => {
+  const grid = document.getElementById('grid-' + cat);
+  const people = PEOPLE.filter(p => p.category === cat);
+  grid.innerHTML = people.map(renderCard).join('');
+});
+
+function showPerson(id) {
+  const p = PEOPLE.find(p => p.id === id);
+  if (!p) return;
+
+  // Build connection tags
+  const connTags = (p.connections || []).map(connId => {
+    // Check if it's a domain
+    if (domainTitles[connId]) {
+      return `<a class="conn-tag conn-tag-domain" href="domain.html?id=${connId}">${domainTitles[connId]}</a>`;
+    }
+    // Check if it's an operator
+    if (opNames[connId]) {
+      return `<a class="conn-tag conn-tag-operator" href="operators.html?id=${connId}">${opNames[connId]}</a>`;
+    }
+    // Check if it's a country node
+    const country = nodeToCountry[connId] || COUNTRIES?.find(co => co.id === connId);
+    if (country) {
+      return `<a class="conn-tag conn-tag-country" href="countries.html">${country.flag} ${country.name}</a>`;
+    }
+    // fallback
+    return `<span class="conn-tag conn-tag-country">${connId}</span>`;
+  }).join('');
+
+  document.getElementById('person-panel-content').innerHTML = `
+    <div class="panel-cat-badge">
+      <span class="cat-label cat-${p.category}">${CAT_LABELS[p.category]}</span>
+      &nbsp;
+      <span class="badge badge-${p.bloc === 'both' || p.bloc === 'asean' ? 'both' : p.bloc}">
+        ${p.bloc === 'both' ? 'Both Blocs' : p.bloc === 'asean' ? 'ASEAN' : p.bloc.toUpperCase() + ' Bloc'}
+      </span>
+    </div>
+    <div class="panel-person-name">${p.name}</div>
+    <div class="panel-person-role">${p.role}</div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Summary</div>
+      <div class="panel-text" style="font-style:italic;color:var(--ink);">${p.summary}</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Analysis</div>
+      <div class="panel-text">${p.analysis}</div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-label">Key decisions &amp; actions</div>
+      <div class="panel-decisions">${p.keyDecisions}</div>
+    </div>
+
+    ${connTags ? `
+      <div class="panel-section">
+        <div class="panel-section-label">Connections within this site</div>
+        <div class="connections-row">${connTags}</div>
+      </div>
+    ` : ''}
+
+    ${p.refs && p.refs.length > 0 ? `
+      <div class="panel-section">
+        <div class="panel-section-label">References &amp; further reading</div>
+        <div class="panel-ref-list">
+          ${p.refs.map(r => `
+            <div class="panel-ref-item">
+              ${r.text}
+              ${r.url ? `<a href="${r.url}" target="_blank" rel="noopener">${r.url}</a>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  document.getElementById('person-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('person-panel').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('person-panel');
+  if (panel.classList.contains('open') &&
+      !panel.contains(e.target) &&
+      !e.target.closest('.person-card')) {
+    closePanel();
+  }
+});
+</script>
+</body>
+</html>
