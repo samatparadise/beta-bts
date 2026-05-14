@@ -6,335 +6,222 @@
 <title>Network Map — Between Two Stacks</title>
 <link rel="stylesheet" href="style.css">
 <style>
-/* ── LAYOUT ──────────────────────────────────── */
-.map-outer {
-  padding: 16px 24px 0;
-  display: flex;
-  flex-direction: column;
-}
+.map-outer { padding: 0 24px 0; display: flex; flex-direction: column; }
 
+/* View tabs */
+.view-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 14px 0 0;
+  align-self: flex-start;
+}
+.view-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  cursor: pointer;
+  border: none;
+  background: var(--bg2);
+  color: var(--ink3);
+  transition: all .15s;
+}
+.view-tab.active { background: var(--ink); color: #fff; }
+.view-tab:hover:not(.active) { background: var(--bg3); }
+
+/* Workspace */
 .map-workspace {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: 1fr 320px;
   gap: 3px;
   background: var(--border);
   border: 1px solid var(--border);
-  height: calc(100vh - 210px);
-  min-height: 520px;
+  height: calc(100vh - 230px);
+  min-height: 500px;
+  margin: 3px 0 0;
 }
 
-/* ── MAP PANEL LEFT ──────────────────────────── */
+/* ── NETWORK VIEW ────────────────────────── */
 #map-left {
   position: relative;
   background: #0D1520;
   overflow: hidden;
   cursor: grab;
+  display: block;
 }
 #map-left.grabbing { cursor: grabbing; }
 #map-canvas { display: block; width: 100%; height: 100%; }
 
+/* ── INFRA VIEW ──────────────────────────── */
+#infra-left {
+  position: relative;
+  background: #0D1822;
+  overflow: hidden;
+  display: none;
+}
+#infra-canvas { display: block; width: 100%; height: 100%; }
+
+/* Controls */
 .map-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  z-index: 10;
+  position: absolute; top: 10px; right: 10px;
+  display: flex; flex-direction: column; gap: 2px; z-index: 10;
 }
-
 .map-btn {
-  width: 28px; height: 28px;
-  border-radius: 3px;
+  width: 28px; height: 28px; border-radius: 3px;
   border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(8,14,24,0.85);
-  color: rgba(255,255,255,0.6);
-  cursor: pointer;
-  font-size: 14px;
+  background: rgba(8,14,24,0.85); color: rgba(255,255,255,0.6);
+  cursor: pointer; font-size: 14px;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--mono);
-  transition: all 0.15s;
+  font-family: var(--mono); transition: all .15s;
 }
-.map-btn:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+.map-btn:hover { color:#fff; border-color:rgba(255,255,255,.3); }
 
+/* Legend */
 #map-legend {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(6,11,20,0.88);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 3px;
-  padding: 10px 13px;
-  z-index: 10;
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(6,11,20,0.9); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 3px; padding: 10px 13px; z-index: 10;
 }
 .ml-title {
-  font-family: var(--mono);
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-bottom: 7px;
+  font-family: var(--mono); font-size: 8px; font-weight: 600;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); margin-bottom: 6px;
 }
 .ml-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 3px 0;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: rgba(255,255,255,0.58);
+  display: flex; align-items: center; gap: 7px; padding: 2px 0;
+  font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.55);
   cursor: pointer;
 }
-.ml-item:hover { color: #fff; }
-.ml-item.dimmed { opacity: 0.28; }
-.ml-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ml-item:hover { color:#fff; }
+.ml-item.dimmed { opacity:.25; }
+.ml-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.ml-diamond {
+  width:8px; height:8px; flex-shrink:0;
+  transform: rotate(45deg); border-radius:1px;
+}
+.ml-sep { border-top:1px solid rgba(255,255,255,0.08); margin: 6px 0; }
 
+/* Filter row */
 .map-filter-row {
-  position: absolute;
-  bottom: 8px;
-  left: 10px;
-  right: 10px;
-  display: flex;
-  gap: 3px;
-  flex-wrap: wrap;
-  z-index: 10;
+  position: absolute; bottom: 8px; left: 10px; right: 10px;
+  display: flex; gap: 3px; flex-wrap: wrap; z-index: 10;
 }
 .mf-btn {
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 2px;
+  font-family: var(--mono); font-size: 9px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 2px;
   border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(8,14,24,0.8);
-  color: rgba(255,255,255,0.48);
-  cursor: pointer;
-  transition: all 0.15s;
+  background: rgba(8,14,24,0.8); color: rgba(255,255,255,0.45);
+  cursor: pointer; transition: all .15s;
 }
 .mf-btn:hover { color: rgba(255,255,255,0.8); }
-.mf-btn.active { color: #fff; border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1); }
+.mf-btn.active { color:#fff; border-color:rgba(255,255,255,.4); background:rgba(255,255,255,0.1); }
+.mf-sep { color:rgba(255,255,255,0.15); font-size:12px; align-self:center; margin:0 1px; }
 
-/* ── INFO PANEL RIGHT ────────────────────────── */
+/* ── INFO PANEL RIGHT ────────────────────── */
 #map-right {
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  background: #fff; display: flex; flex-direction: column; overflow: hidden;
 }
-
 .ir-header {
-  background: var(--ink);
-  padding: 14px 18px;
-  flex-shrink: 0;
+  background: var(--ink); padding: 12px 16px; flex-shrink: 0;
   border-bottom: 2px solid var(--amber);
 }
-
 .ir-header-label {
-  font-family: var(--mono);
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-bottom: 3px;
+  font-family: var(--mono); font-size: 8px; font-weight: 600;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); margin-bottom: 3px;
 }
-
 .ir-header-name {
-  font-family: var(--serif);
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.2;
-  transition: color 0.2s;
+  font-family: var(--serif); font-size: 15px; font-weight: 700;
+  color: #fff; line-height: 1.2;
 }
-
-#ir-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
-}
-
-/* Empty state */
+#ir-body { flex:1; overflow-y:auto; }
 .ir-empty {
-  padding: 40px 24px;
-  text-align: center;
+  padding: 36px 20px; text-align: center;
 }
-.ir-empty-icon { font-size: 28px; opacity: 0.2; margin-bottom: 14px; }
+.ir-empty-icon { font-size:26px; opacity:.2; margin-bottom:12px; }
 .ir-empty-text {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: var(--ink4);
-  line-height: 1.9;
-  text-transform: uppercase;
+  font-family: var(--mono); font-size: 10px; letter-spacing:.08em;
+  color: var(--ink4); line-height:1.9; text-transform:uppercase;
 }
-
-/* Node detail */
-.ir-node {
-  padding: 0;
-}
-
+.ir-node { padding: 0; }
 .ir-group-bar {
-  padding: 8px 18px;
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  padding: 7px 16px; font-family: var(--mono);
+  font-size: 9px; font-weight: 700; letter-spacing:.14em; text-transform:uppercase;
 }
-
 .ir-desc {
-  padding: 12px 18px;
-  font-size: 13px;
-  line-height: 1.68;
-  color: var(--ink2);
-  border-bottom: 1px solid var(--border);
+  padding: 10px 16px; font-size: 13px; line-height:1.65;
+  color: var(--ink2); border-bottom: 1px solid var(--border);
 }
-
-.ir-align {
-  padding: 8px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
+.ir-align { padding: 7px 16px; border-bottom: 1px solid var(--border); }
 .align-pill {
-  display: inline-block;
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 2px;
+  display: inline-block; font-family: var(--mono); font-size: 9px;
+  font-weight: 700; letter-spacing:.1em; text-transform:uppercase;
+  padding: 2px 7px; border-radius: 2px;
 }
-
-.ir-threat {
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
+.ir-threat { padding: 10px 16px; border-bottom: 1px solid var(--border); }
 .ir-threat-label {
-  font-family: var(--mono);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cn);
-  margin-bottom: 6px;
+  font-family: var(--mono); font-size: 8px; font-weight: 700;
+  letter-spacing:.14em; text-transform:uppercase; color: var(--cn); margin-bottom:5px;
 }
-
 .ir-threat-text {
-  font-size: 12px;
-  line-height: 1.65;
-  color: var(--ink2);
-  padding: 8px 10px;
-  background: var(--cn-bg);
-  border-left: 3px solid var(--cn);
+  font-size: 12px; line-height:1.62; color: var(--ink2);
+  padding: 8px 10px; background: var(--cn-bg); border-left: 3px solid var(--cn);
 }
-
-.ir-conns-section {
-  padding: 10px 18px;
-}
-
+.ir-conns-section { padding: 8px 16px; }
 .ir-conns-label {
-  font-family: var(--mono);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink4);
-  margin-bottom: 6px;
+  font-family: var(--mono); font-size: 8px; font-weight: 700;
+  letter-spacing:.14em; text-transform:uppercase; color: var(--ink4); margin-bottom:5px;
 }
-
-.ir-conn-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
+.ir-conn-list { display:flex; flex-direction:column; gap:2px; }
 .ir-conn-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
-  background: var(--bg2);
-  text-decoration: none;
-  color: inherit;
-  border-left: 3px solid transparent;
-  transition: background 0.12s;
-  font-size: 12px;
+  display:flex; align-items:center; gap:8px; padding:6px 8px;
+  background: var(--bg2); text-decoration:none; color:inherit;
+  border-left: 3px solid transparent; transition: background .12s; font-size:12px;
 }
-.ir-conn-item:hover { background: var(--bg3); text-decoration: none; }
-.ir-conn-name { font-weight: 600; color: var(--ink); flex: 1; }
-.ir-conn-meta { font-family: var(--mono); font-size: 9px; color: var(--ink4); }
-.ir-conn-arrow { font-size: 11px; opacity: 0.5; flex-shrink: 0; }
-
+.ir-conn-item:hover { background: var(--bg3); text-decoration:none; }
+.ir-conn-name { font-weight:600; color:var(--ink); flex:1; }
+.ir-conn-meta { font-family:var(--mono); font-size:9px; color:var(--ink4); }
+.ir-conn-arrow { font-size:10px; opacity:.5; flex-shrink:0; }
 .ir-profile-link {
-  display: block;
-  margin: 12px 18px;
-  padding: 9px 14px;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid var(--border);
-  color: var(--ink3);
-  text-decoration: none;
-  transition: all 0.15s;
+  display:block; margin:10px 16px; padding:8px 12px; text-align:center;
+  font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.1em;
+  text-transform:uppercase; border:1px solid var(--border); color:var(--ink3);
+  text-decoration:none; transition:all .15s;
 }
-.ir-profile-link:hover { background: var(--bg2); color: var(--ink); text-decoration: none; }
-
-/* Bottom stats bar */
+.ir-profile-link:hover { background:var(--bg2); color:var(--ink); text-decoration:none; }
 .ir-footer {
-  padding: 8px 18px;
-  background: var(--bg2);
-  border-top: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 9px;
-  color: var(--ink4);
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px;
+  padding: 7px 16px; background:var(--bg2); border-top:1px solid var(--border);
+  font-family:var(--mono); font-size:9px; color:var(--ink4); letter-spacing:.06em;
+  flex-shrink:0; display:flex; justify-content:space-between; flex-wrap:wrap; gap:3px;
 }
 
-/* ── EXPLAINER ───────────────────────────────── */
+/* ── EXPLAINER ───────────────────────────── */
 .map-explainer {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  margin: 16px 0 48px;
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 2px; background: var(--border); border: 1px solid var(--border);
+  margin: 14px 0 40px;
 }
-.exp-item { background: var(--bg); padding: 16px 18px; }
-.exp-icon { font-size: 18px; margin-bottom: 6px; }
-.exp-title { font-weight: 600; font-size: 12px; margin-bottom: 3px; }
-.exp-desc { font-size: 11px; color: var(--ink2); line-height: 1.55; }
+.exp-item { background:var(--bg); padding:14px 16px; }
+.exp-icon { font-size:16px; margin-bottom:5px; }
+.exp-title { font-weight:600; font-size:12px; margin-bottom:3px; }
+.exp-desc { font-size:11px; color:var(--ink2); line-height:1.55; }
 
-@media (max-width: 900px) {
-  .map-workspace { grid-template-columns: 1fr; grid-template-rows: 420px auto; height: auto; }
-  #map-right { max-height: 400px; }
-  .map-explainer { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 600px) {
-  .map-explainer { grid-template-columns: 1fr; }
+@media(max-width:900px){
+  .map-workspace{grid-template-columns:1fr;grid-template-rows:420px auto;height:auto;}
+  #map-right{max-height:380px;}
+  .map-explainer{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
 <body>
 
 <nav id="nav">
-  <a class="nav-brand" href="index.html">
-    <div class="nav-brand-dot"></div>
-    Between Two Stacks
-  </a>
+  <a class="nav-brand" href="index.html"><div class="nav-brand-dot"></div>Between Two Stacks</a>
   <div class="nav-links">
     <a class="nav-link" href="index.html">Home</a>
     <a class="nav-link" href="domains.html">Domains</a>
@@ -350,56 +237,86 @@
   </div>
 </nav>
 
-<!-- PAGE HERO -->
-<div style="background:var(--ink);color:#fff;padding:20px 24px 18px;border-bottom:3px solid var(--amber);">
+<div style="background:var(--ink);color:#fff;padding:18px 24px 16px;border-bottom:3px solid var(--amber);">
   <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;max-width:1400px;margin:0 auto;">
-    <h1 style="font-family:var(--serif);font-size:clamp(20px,2.5vw,30px);font-weight:900;">Network Map</h1>
-    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.38);letter-spacing:.08em;">
-      Click any node to explore · Drag to reposition · Scroll to zoom · Double-click to unpin
-    </span>
+    <h1 style="font-family:var(--serif);font-size:clamp(20px,2.5vw,28px);font-weight:900;">Network Map</h1>
+    <span style="font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.06em;">Hover to explore connections · Click to focus · Drag to reposition · Scroll to zoom</span>
   </div>
 </div>
 
-<!-- WORKSPACE -->
 <div class="map-outer">
+
+  <!-- View switcher tabs -->
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchView('network',this)">⬡ Network View</button>
+    <button class="view-tab" onclick="switchView('infra',this)">🌐 Physical Infrastructure</button>
+  </div>
+
   <div class="map-workspace">
 
-    <!-- LEFT: CANVAS -->
+    <!-- NETWORK CANVAS -->
     <div id="map-left">
       <canvas id="map-canvas"></canvas>
 
       <div id="map-legend">
-        <div class="ml-title">Groups</div>
+        <div class="ml-title">Operators</div>
         <div class="ml-item" data-group="us" onclick="toggleGroup('us',this)">
           <div class="ml-dot" style="background:#4A90D9"></div>US / Western
         </div>
         <div class="ml-item" data-group="cn" onclick="toggleGroup('cn',this)">
           <div class="ml-dot" style="background:#DE2910"></div>Chinese
         </div>
-        <div class="ml-item" data-group="asean" onclick="toggleGroup('asean',this)">
-          <div class="ml-dot" style="background:#D97706"></div>ASEAN Nations
-        </div>
         <div class="ml-item" data-group="norms" onclick="toggleGroup('norms',this)">
           <div class="ml-dot" style="background:#7C3AED"></div>Norms &amp; Treaties
+        </div>
+        <div class="ml-sep"></div>
+        <div class="ml-title">ASEAN Alignment</div>
+        <div style="display:flex;align-items:center;gap:7px;padding:2px 0;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.5);">
+          <div class="ml-dot" style="background:#4A90D9;opacity:.7;"></div>US-aligned
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;padding:2px 0;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.5);">
+          <div class="ml-dot" style="background:#D97706;"></div>Hedging
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;padding:2px 0;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.5);">
+          <div class="ml-dot" style="background:#DE2910;opacity:.7;"></div>CN-aligned
+        </div>
+        <div class="ml-sep"></div>
+        <div class="ml-title">People &amp; Power</div>
+        <div class="ml-item" id="people-toggle" onclick="togglePeople(this)" style="cursor:pointer;opacity:1.0;">
+          <div class="ml-diamond" style="background:#F59E0B;"></div>
+          <span id="people-toggle-label">Hide People</span>
         </div>
       </div>
 
       <div class="map-controls">
         <button class="map-btn" onclick="zoom(1.25)">+</button>
         <button class="map-btn" onclick="zoom(0.8)">−</button>
-        <button class="map-btn" onclick="resetView()" style="font-size:9px;letter-spacing:-.5px;">fit</button>
+        <button class="map-btn" onclick="resetView()" style="font-size:9px;">fit</button>
       </div>
 
       <div class="map-filter-row">
         <button class="mf-btn active" data-f="all" onclick="setEdgeFilter('all',this)">All</button>
         <button class="mf-btn" data-f="us" onclick="setEdgeFilter('us',this)">US tech</button>
-        <button class="mf-btn" data-f="cn" onclick="setEdgeFilter('cn',this)">Chinese tech</button>
+        <button class="mf-btn" data-f="cn" onclick="setEdgeFilter('cn',this)">Chinese</button>
         <button class="mf-btn" data-f="asean" onclick="setEdgeFilter('asean',this)">ASEAN</button>
-        <button class="mf-btn" data-f="norms" onclick="setEdgeFilter('norms',this)">Norms</button>
+        <span class="mf-sep">|</span>
+        <button class="mf-btn" data-d="surveillance" onclick="setDomainFilter('surveillance',this)">Surveillance</button>
+        <button class="mf-btn" data-d="platforms" onclick="setDomainFilter('platforms',this)">Platforms</button>
+        <button class="mf-btn" data-d="data" onclick="setDomainFilter('data',this)">Data</button>
+        <button class="mf-btn" data-d="ai" onclick="setDomainFilter('ai',this)">AI</button>
+        <button class="mf-btn" data-d="ai-infra" onclick="setDomainFilter('ai-infra',this)">AI Infra</button>
+        <button class="mf-btn" data-d="cybersecurity" onclick="setDomainFilter('cybersecurity',this)">Cyber</button>
+        <button class="mf-btn" data-d="fintech" onclick="setDomainFilter('fintech',this)">Fintech</button>
+        <button class="mf-btn" data-d="softpower" onclick="setDomainFilter('softpower',this)">Soft Power</button>
       </div>
     </div>
 
-    <!-- RIGHT: INFO PANEL -->
+    <!-- INFRA CANVAS -->
+    <div id="infra-left">
+      <canvas id="infra-canvas"></canvas>
+    </div>
+
+    <!-- INFO PANEL -->
     <div id="map-right">
       <div class="ir-header">
         <div class="ir-header-label">Selected node</div>
@@ -408,13 +325,11 @@
       <div id="ir-body">
         <div class="ir-empty">
           <div class="ir-empty-icon">◎</div>
-          <div class="ir-empty-text">
-            Click any node<br>to explore its<br>connections and profile
-          </div>
+          <div class="ir-empty-text">Hover to preview<br>Click to explore<br>connections &amp; profile</div>
         </div>
       </div>
       <div class="ir-footer">
-        <span id="stat-nodes">28 nodes</span>
+        <span id="stat-nodes">— nodes</span>
         <span id="stat-edges">— connections</span>
         <span id="stat-selected">Nothing selected</span>
       </div>
@@ -425,35 +340,35 @@
   <!-- EXPLAINER -->
   <div class="map-explainer">
     <div class="exp-item">
-      <div class="exp-icon">⭕</div>
-      <div class="exp-title">Node size = significance</div>
-      <div class="exp-desc">Larger nodes indicate actors with greater documented reach. Huawei and Meta are among the largest — broadest ASEAN footprints.</div>
+      <div class="exp-icon">⬡◇</div>
+      <div class="exp-title">Circles = Operators · Diamonds = People</div>
+      <div class="exp-desc">Circles are tech companies and institutions. Diamond shapes are key individuals — toggle People on/off via the legend. Node size reflects significance.</div>
     </div>
     <div class="exp-item">
-      <div class="exp-icon">↗</div>
-      <div class="exp-title">Line weight = relationship strength</div>
-      <div class="exp-desc">Thicker lines indicate stronger documented relationships — major contracts, dominant platform use, or deep infrastructure dependency.</div>
+      <div class="exp-icon">🖱️</div>
+      <div class="exp-title">Hover to explore</div>
+      <div class="exp-desc">Hover over any node to highlight its connections instantly. Click to lock the focus and see the full profile in the panel. Drag to reposition. Scroll to zoom.</div>
     </div>
     <div class="exp-item">
-      <div class="exp-icon">🔵🔴</div>
-      <div class="exp-title">Colour = bloc</div>
-      <div class="exp-desc">Blue = US/Western. Red = Chinese. Amber = ASEAN governments. Purple = governance frameworks and norms bodies.</div>
+      <div class="exp-icon">🔵🟡🔴</div>
+      <div class="exp-title">ASEAN alignment in colour</div>
+      <div class="exp-desc">ASEAN country nodes are coloured by documented alignment — blue-tinted for US-aligned, amber for hedgers, red-tinted for CN-aligned or dependent states.</div>
     </div>
     <div class="exp-item">
-      <div class="exp-icon">🔗</div>
-      <div class="exp-title">Panel = relationships</div>
-      <div class="exp-desc">The right panel lists every connection for a selected node — click any connection to jump to its full profile in the research database.</div>
+      <div class="exp-icon">🔎</div>
+      <div class="exp-title">Domain filters</div>
+      <div class="exp-desc">Filter by domain (Surveillance, Platforms, AI etc.) to isolate which operators are active in each research arena. Click again to clear.</div>
     </div>
   </div>
 
-</div><!-- end map-outer -->
+</div><!-- map-outer -->
 
 <footer id="footer">
   <div class="footer-inner">
     <div>
       <div class="footer-brand">Between Two Stacks</div>
       <div>A prototype research tool for the digital rights community.</div>
-      <div class="footer-note">Beta · May 2026 · Connections derived from OPERATORS country data.</div>
+      <div class="footer-note">Beta · May 2026 · Connections derived from OPERATORS and PEOPLE data.</div>
     </div>
     <div>
       <div class="footer-col-title">Pages</div>
@@ -479,24 +394,38 @@
 
 <script src="data.js"></script>
 <script>
+// ── DOMAIN NODE MAPPING ───────────────────────────────────
+const DOMAIN_NODES = {
+  "surveillance": ["hikvision_n","huawei","nso","palantir","sensetime_n"],
+  "platforms":    ["bytedance","google","meta","tencent"],
+  "data":         ["alibaba","aws","google","huawei","microsoft"],
+  "fintech":      ["alibaba","microsoft","tencent"],
+  "ai":           ["alibaba","google","huawei","openai_n","sensetime_n"],
+  "cybersecurity":["nso","zte_n"],
+  "trade":        ["defa_n","itu_n"],
+  "softpower":    ["defa_n","itu_n"],
+  "ai-infra":     ["alibaba","aws","google","huawei","microsoft","openai_n"],
+};
+
+// ── COLOURS ───────────────────────────────────────────────
 const COLORS = {
-  us:    {node:'#4A90D9', fill:'rgba(74,144,217,0.14)',   label:'US / Western Tech'},
-  cn:    {node:'#DE2910', fill:'rgba(222,41,16,0.14)',  label:'Chinese Tech'},
-  asean: {node:'#D97706', fill:'rgba(217,119,6,0.14)',  label:'ASEAN Nations'},
-  norms: {node:'#7C3AED', fill:'rgba(124,58,237,0.14)', label:'Norms & Treaties'},
+  us:         {node:'#4A90D9', fill:'rgba(74,144,217,0.14)',  label:'US / Western Tech'},
+  cn:         {node:'#DE2910', fill:'rgba(222,41,16,0.14)',   label:'Chinese Tech'},
+  asean:      {node:'#D97706', fill:'rgba(217,119,6,0.14)',   label:'ASEAN Nations'},
+  norms:      {node:'#7C3AED', fill:'rgba(124,58,237,0.14)',  label:'Norms & Treaties'},
+  'people-us':{node:'#F59E0B', fill:'rgba(245,158,11,0.18)',  label:'People — US Bloc'},
+  'people-cn':{node:'#F59E0B', fill:'rgba(245,158,11,0.18)',  label:'People — CN Bloc'},
+  'people-both':{node:'#F59E0B',fill:'rgba(245,158,11,0.18)',label:'People — Both'},
 };
 
+const PEOPLE_GROUPS = new Set(['people-us','people-cn','people-both']);
 const STRENGTH = {3:'Strong',2:'Moderate',1:'Documented'};
-const LEAN_STYLE = {
-  us:   {bg:'#D6E8FF', fg:'#0A3161'},
-  cn:   {bg:'#FFD6D2', fg:'#DE2910'},
-  hedge:{bg:'#FEF3C7', fg:'#D97706'},
-};
+const LEAN_STYLE = {us:{bg:'#D6E8FF',fg:'#0A3161'},cn:{bg:'#FFD6D2',fg:'#DE2910'},hedge:{bg:'#FEF3C7',fg:'#D97706'}};
 
-// ── CANVAS ────────────────────────────────────────────────
-const mapLeft = document.getElementById('map-left');
-const canvas  = document.getElementById('map-canvas');
-const ctx     = canvas.getContext('2d');
+// ── CANVAS SETUP ─────────────────────────────────────────
+const mapLeft   = document.getElementById('map-left');
+const canvas    = document.getElementById('map-canvas');
+const ctx       = canvas.getContext('2d');
 
 function resize() {
   canvas.width  = mapLeft.clientWidth  || 600;
@@ -505,169 +434,241 @@ function resize() {
 resize();
 new ResizeObserver(()=>{ resize(); draw(); }).observe(mapLeft);
 
-// ── NODES / EDGES ─────────────────────────────────────────
-const nodes = MAP_NODES.map((n,i)=>{
+// ── NODES ─────────────────────────────────────────────────
+// Start with people nodes hidden
+let showPeople = true;
+
+const allNodes = MAP_NODES.map((n,i)=>{
   const a=(i/MAP_NODES.length)*Math.PI*2;
   const d=Math.min(canvas.width,canvas.height)*0.3;
   return{...n, x:canvas.width/2+Math.cos(a)*d, y:canvas.height/2+Math.sin(a)*d, vx:0,vy:0,pinned:false};
 });
-const edges = MAP_EDGES;
+
+const allEdges = MAP_EDGES;
 const nodeById={};
-nodes.forEach(n=>nodeById[n.id]=n);
+allNodes.forEach(n=>nodeById[n.id]=n);
+
+function getActiveNodes(){ return allNodes.filter(n=>showPeople||!PEOPLE_GROUPS.has(n.group)); }
+function getActiveEdges(){
+  const activeIds=new Set(getActiveNodes().map(n=>n.id));
+  return allEdges.filter(e=>activeIds.has(e.s)&&activeIds.has(e.t));
+}
 
 // ── PHYSICS ───────────────────────────────────────────────
 const zones={
-  us:   ()=>({x:canvas.width*.2, y:canvas.height*.5}),
-  cn:   ()=>({x:canvas.width*.8, y:canvas.height*.5}),
-  asean:()=>({x:canvas.width*.5, y:canvas.height*.62}),
-  norms:()=>({x:canvas.width*.5, y:canvas.height*.16}),
+  us:         ()=>({x:canvas.width*.16, y:canvas.height*.5}),
+  cn:         ()=>({x:canvas.width*.84, y:canvas.height*.5}),
+  asean:      ()=>({x:canvas.width*.5,  y:canvas.height*.72}),
+  norms:      ()=>({x:canvas.width*.5,  y:canvas.height*.14}),
+  'people-us':()=>({x:canvas.width*.2,  y:canvas.height*.3}),
+  'people-cn':()=>({x:canvas.width*.8,  y:canvas.height*.3}),
+  'people-both':()=>({x:canvas.width*.5,y:canvas.height*.45}),
 };
 
 function tick(damp){
   damp=damp||0.72;
-  for(let i=0;i<nodes.length;i++){
-    for(let j=i+1;j<nodes.length;j++){
-      const a=nodes[i],b=nodes[j];
+  const activeNodes=getActiveNodes();
+  const activeEdges=getActiveEdges();
+
+  for(let i=0;i<activeNodes.length;i++){
+    for(let j=i+1;j<activeNodes.length;j++){
+      const a=activeNodes[i],b=activeNodes[j];
       const dx=a.x-b.x,dy=a.y-b.y;
       const d=Math.sqrt(dx*dx+dy*dy)||1;
-      const min=(a.size+b.size)*2+50;
-      if(d<min*2.5){
-        const f=9000/(d*d), fx=f*dx/d, fy=f*dy/d;
+      const minD=(a.size+b.size)*2.2+40;
+      if(d<minD*2.5){
+        const f=8000/(d*d),fx=f*dx/d,fy=f*dy/d;
         if(!a.pinned){a.vx+=fx;a.vy+=fy;}
         if(!b.pinned){b.vx-=fx;b.vy-=fy;}
       }
     }
   }
-  edges.forEach(e=>{
+  activeEdges.forEach(e=>{
     const a=nodeById[e.s],b=nodeById[e.t];
     if(!a||!b) return;
-    const dx=b.x-a.x,dy=b.y-a.y;
-    const d=Math.sqrt(dx*dx+dy*dy)||1;
-    const rest=140-e.w*18;
-    const f=(d-rest)*0.045*(e.w/3);
-    const fx=f*dx/d,fy=f*dy/d;
+    const dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    const rest=120-e.w*14;
+    const f=(d-rest)*0.04*(e.w/3),fx=f*dx/d,fy=f*dy/d;
     if(!a.pinned){a.vx+=fx;a.vy+=fy;}
     if(!b.pinned){b.vx-=fx;b.vy-=fy;}
   });
-  nodes.forEach(n=>{
+  activeNodes.forEach(n=>{
     if(n.pinned){n.vx=0;n.vy=0;return;}
-    const z=zones[n.group]();
-    n.vx+=(z.x-n.x)*0.016;
-    n.vy+=(z.y-n.y)*0.016;
-    n.vx*=damp;n.vy*=damp;
-    n.x+=n.vx;n.y+=n.vy;
+    const z=(zones[n.group]||zones.asean)();
+    n.vx+=(z.x-n.x)*0.016; n.vy+=(z.y-n.y)*0.016;
+    n.vx*=damp; n.vy*=damp; n.x+=n.vx; n.y+=n.vy;
     const p=n.size+8;
     n.x=Math.max(p,Math.min(canvas.width-p,n.x));
     n.y=Math.max(p,Math.min(canvas.height-p,n.y));
   });
 }
-for(let i=0;i<600;i++) tick(0.86);
+for(let i=0;i<500;i++) tick(0.85);
 
-// ── VIEW ─────────────────────────────────────────────────
+// ── VIEW STATE ────────────────────────────────────────────
 let camX=0,camY=0,camScale=1;
-let hiddenGroups=new Set(),edgeFilter='all',selectedNode=null;
+let hiddenGroups=new Set(),edgeFilter='all',domainFilter=null;
+let selectedNode=null,hoveredNode=null,lockedNode=null;
 
 function toScreen(wx,wy){return{x:wx*camScale+camX,y:wy*camScale+camY};}
 function toWorld(sx,sy){return{x:(sx-camX)/camScale,y:(sy-camY)/camScale};}
 
 function resetView(){
-  const xs=nodes.map(n=>n.x),ys=nodes.map(n=>n.y);
-  const x0=Math.min(...xs)-40,x1=Math.max(...xs)+40;
-  const y0=Math.min(...ys)-40,y1=Math.max(...ys)+40;
+  const ns=getActiveNodes();
+  if(!ns.length) return;
+  const xs=ns.map(n=>n.x),ys=ns.map(n=>n.y);
+  const x0=Math.min(...xs)-50,x1=Math.max(...xs)+50;
+  const y0=Math.min(...ys)-50,y1=Math.max(...ys)+50;
   camScale=Math.min(canvas.width/(x1-x0),canvas.height/(y1-y0),1.4);
   camX=canvas.width/2-((x0+x1)/2)*camScale;
   camY=canvas.height/2-((y0+y1)/2)*camScale;
   draw();
 }
-
 function zoom(f){
   const cx=canvas.width/2,cy=canvas.height/2;
-  camX=cx-(cx-camX)*f;
-  camY=cy-(cy-camY)*f;
-  camScale=Math.max(0.2,Math.min(5,camScale*f));
-  draw();
+  camX=cx-(cx-camX)*f; camY=cy-(cy-camY)*f;
+  camScale=Math.max(0.2,Math.min(5,camScale*f)); draw();
 }
 
 // ── DRAW ─────────────────────────────────────────────────
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle='#0D1520';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#0D1520'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  const activeNodes=getActiveNodes();
+  const activeEdges=getActiveEdges();
+
+  // Focus node = hovered (preview) or locked (clicked)
+  const focusNode=lockedNode||hoveredNode;
+
+  // Which nodes are connected to focus?
+  const connectedIds=focusNode
+    ? new Set(activeEdges.filter(e=>e.s===focusNode.id||e.t===focusNode.id)
+        .map(e=>e.s===focusNode.id?e.t:e.s))
+    : null;
 
   // Edges
-  edges.forEach(e=>{
+  activeEdges.forEach(e=>{
     const a=nodeById[e.s],b=nodeById[e.t];
     if(!a||!b) return;
     if(hiddenGroups.has(a.group)||hiddenGroups.has(b.group)) return;
-    if(edgeFilter!=='all'&&a.group!==edgeFilter&&b.group!==edgeFilter) return;
-    const sel=selectedNode;
-    const isAct=sel&&(sel.id===a.id||sel.id===b.id);
-    const isDim=sel&&!isAct;
+    if(edgeFilter!=='all'&&a.group!==edgeFilter&&b.group!==edgeFilter&&
+       !PEOPLE_GROUPS.has(a.group)&&!PEOPLE_GROUPS.has(b.group)) return;
+    if(domainFilter&&!DOMAIN_NODES[domainFilter]?.includes(a.id)&&
+       !DOMAIN_NODES[domainFilter]?.includes(b.id)) return;
+
+    const isActive=focusNode&&(focusNode.id===a.id||focusNode.id===b.id);
+    const isDim=focusNode&&!isActive;
     const as=toScreen(a.x,a.y),bs=toScreen(b.x,b.y);
     const col=COLORS[a.group]?.node||'#888';
-    const op=isDim?0.02:isAct?0.78:0.08+e.w*0.06;
-    const lw=isDim?0.3:isAct?1.4+e.w*0.45:0.35+e.w*0.35;
+    const op=isDim?0.02:isActive?0.75:0.07+e.w*0.05;
+    const lw=isDim?0.3:isActive?1.4+e.w*0.4:0.35+e.w*0.3;
     const qx=(as.x+bs.x)/2+(bs.y-as.y)*0.1;
     const qy=(as.y+bs.y)/2-(bs.x-as.x)*0.1;
     ctx.save();
-    ctx.globalAlpha=op;
-    ctx.strokeStyle=col;
+    ctx.globalAlpha=op; ctx.strokeStyle=col;
     ctx.lineWidth=lw*camScale;
-    ctx.beginPath();
-    ctx.moveTo(as.x,as.y);
-    ctx.quadraticCurveTo(qx,qy,bs.x,bs.y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(as.x,as.y);
+    ctx.quadraticCurveTo(qx,qy,bs.x,bs.y); ctx.stroke();
     ctx.restore();
   });
 
   // Nodes
-  nodes.forEach(n=>{
+  activeNodes.forEach(n=>{
     if(hiddenGroups.has(n.group)) return;
     const s=toScreen(n.x,n.y);
     const r=n.size*camScale;
-    const col=COLORS[n.group]?.node||'#888';
-    const isSel=selectedNode?.id===n.id;
-    const isDim=selectedNode&&!isSel&&!edges.some(e=>
-      (e.s===selectedNode.id&&e.t===n.id)||(e.t===selectedNode.id&&e.s===n.id));
+    const isPerson=PEOPLE_GROUPS.has(n.group);
 
-    ctx.save();
-    ctx.globalAlpha=isDim?0.09:1;
-
-    if(isSel){
-      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,r*3.5);
-      g.addColorStop(0,col+'44');g.addColorStop(1,col+'00');
-      ctx.fillStyle=g;
-      ctx.beginPath();ctx.arc(s.x,s.y,r*3.5,0,Math.PI*2);ctx.fill();
+    // Alignment colour for ASEAN nodes
+    let nodeStroke=COLORS[n.group]?.node||'#888';
+    if(n.group==='asean'&&typeof COUNTRIES!=='undefined'){
+      const co=COUNTRIES.find(c=>c.id+'_n'===n.id);
+      if(co){
+        if(co.lean==='us') nodeStroke='#4A90D9';
+        else if(co.lean==='cn') nodeStroke='#DE2910';
+        else nodeStroke='#D97706';
+      }
     }
 
-    ctx.strokeStyle=col;
-    ctx.lineWidth=(isSel?2.5:1)*camScale;
-    ctx.globalAlpha=isDim?0.05:isSel?1:0.4;
-    ctx.beginPath();ctx.arc(s.x,s.y,r+4*camScale,0,Math.PI*2);ctx.stroke();
+    const isFocus=focusNode?.id===n.id;
+    const isConn=connectedIds?.has(n.id);
+    const inDomain=!domainFilter||(DOMAIN_NODES[domainFilter]?.includes(n.id));
 
-    ctx.globalAlpha=isDim?0.07:1;
-    ctx.fillStyle=COLORS[n.group]?.fill||'rgba(100,100,100,.12)';
-    ctx.strokeStyle=col;
-    ctx.lineWidth=(isSel?2.5:1.5)*camScale;
-    ctx.beginPath();ctx.arc(s.x,s.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+    let isDim=false;
+    if(focusNode&&!isFocus&&!isConn) isDim=true;
+    if(!focusNode&&domainFilter&&!inDomain) isDim=true;
 
-    ctx.fillStyle=col;
-    ctx.globalAlpha=isDim?0.07:0.75;
-    ctx.beginPath();ctx.arc(s.x,s.y,r*.28,0,Math.PI*2);ctx.fill();
+    ctx.save();
+    ctx.globalAlpha=isDim?0.08:1;
 
-    const fs=Math.max(8,Math.min(12,10*camScale));
-    ctx.globalAlpha=isDim?0.07:isSel?1:0.8;
-    ctx.fillStyle=isSel?col:'#9ab0c8';
-    ctx.font=`${isSel?'600':'500'} ${fs}px 'IBM Plex Mono',monospace`;
+    // Glow for focus
+    if(isFocus){
+      const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,r*3.5);
+      g.addColorStop(0,nodeStroke+'44'); g.addColorStop(1,nodeStroke+'00');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(s.x,s.y,r*3.5,0,Math.PI*2); ctx.fill();
+    }
+
+    if(isPerson){
+      // Diamond shape
+      const d=r*1.1;
+      ctx.strokeStyle=nodeStroke;
+      ctx.lineWidth=(isFocus?2.5:1.2)*camScale;
+      ctx.globalAlpha=isDim?0.05:isFocus?1:0.55;
+      ctx.beginPath();
+      ctx.moveTo(s.x,s.y-d-4*camScale); ctx.lineTo(s.x+d+4*camScale,s.y);
+      ctx.lineTo(s.x,s.y+d+4*camScale); ctx.lineTo(s.x-d-4*camScale,s.y);
+      ctx.closePath(); ctx.stroke();
+
+      ctx.globalAlpha=isDim?0.07:1;
+      ctx.fillStyle=COLORS[n.group]?.fill||'rgba(245,158,11,0.15)';
+      ctx.strokeStyle=nodeStroke;
+      ctx.lineWidth=(isFocus?2.5:1.5)*camScale;
+      ctx.beginPath();
+      ctx.moveTo(s.x,s.y-d); ctx.lineTo(s.x+d,s.y);
+      ctx.lineTo(s.x,s.y+d); ctx.lineTo(s.x-d,s.y);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      // Inner dot
+      ctx.fillStyle=nodeStroke; ctx.globalAlpha=isDim?0.07:0.7;
+      ctx.beginPath(); ctx.arc(s.x,s.y,r*.2,0,Math.PI*2); ctx.fill();
+
+    } else {
+      // Circle shape
+      ctx.strokeStyle=nodeStroke;
+      ctx.lineWidth=(isFocus?2.5:1)*camScale;
+      ctx.globalAlpha=isDim?0.05:isFocus?1:0.38;
+      ctx.beginPath(); ctx.arc(s.x,s.y,r+4*camScale,0,Math.PI*2); ctx.stroke();
+
+      ctx.globalAlpha=isDim?0.07:1;
+      let nodeFill=COLORS[n.group]?.fill||'rgba(100,100,100,.12)';
+      if(n.group==='asean'){
+        if(nodeStroke==='#4A90D9') nodeFill='rgba(74,144,217,0.16)';
+        else if(nodeStroke==='#DE2910') nodeFill='rgba(222,41,16,0.16)';
+        else nodeFill='rgba(217,119,6,0.16)';
+      }
+      ctx.fillStyle=nodeFill; ctx.strokeStyle=nodeStroke;
+      ctx.lineWidth=(isFocus?2.5:1.5)*camScale;
+      ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle=nodeStroke; ctx.globalAlpha=isDim?0.07:0.72;
+      ctx.beginPath(); ctx.arc(s.x,s.y,r*.28,0,Math.PI*2); ctx.fill();
+    }
+
+    // Label
+    const fs=Math.max(7,Math.min(11,9.5*camScale));
+    ctx.globalAlpha=isDim?0.07:isFocus?1:0.78;
+    ctx.fillStyle=isFocus?nodeStroke:(isPerson?'#F8CC6A':'#9ab0c8');
+    ctx.font=`${isFocus?'600':'500'} ${fs}px 'IBM Plex Mono',monospace`;
     ctx.textAlign='center';
-    const lh=fs+2;
+    const lh=fs+1.5;
     const words=n.label.split(' ');
+    const yOff=isPerson?r*1.35+lh:r+lh;
     if(words.length>2||n.label.length>13){
       const mid=Math.ceil(words.length/2);
-      ctx.fillText(words.slice(0,mid).join(' '),s.x,s.y+r+lh);
-      ctx.fillText(words.slice(mid).join(' '),s.x,s.y+r+lh*2);
+      ctx.fillText(words.slice(0,mid).join(' '),s.x,s.y+yOff);
+      ctx.fillText(words.slice(mid).join(' '),s.x,s.y+yOff+lh);
     } else {
-      ctx.fillText(n.label,s.x,s.y+r+lh);
+      ctx.fillText(n.label,s.x,s.y+yOff);
     }
     ctx.restore();
   });
@@ -676,19 +677,19 @@ function draw(){
 // ── ANIMATION ─────────────────────────────────────────────
 let simOn=true,simN=0;
 (function loop(){
-  if(simOn&&simN<500){tick();simN++;}
+  if(simOn&&simN<600){tick();simN++;}
   draw();
   requestAnimationFrame(loop);
 })();
 
-// Update stats
-document.getElementById('stat-nodes').textContent=nodes.length+' nodes';
-document.getElementById('stat-edges').textContent=edges.length+' connections';
+// Stats
+document.getElementById('stat-nodes').textContent=allNodes.filter(n=>!PEOPLE_GROUPS.has(n.group)).length+' nodes';
+document.getElementById('stat-edges').textContent=allEdges.length+' connections';
 
 // ── INPUT ─────────────────────────────────────────────────
 function getNodeAt(sx,sy){
   const w=toWorld(sx,sy);
-  return nodes.find(n=>{
+  return getActiveNodes().find(n=>{
     if(hiddenGroups.has(n.group)) return false;
     const dx=n.x-w.x,dy=n.y-w.y;
     return Math.sqrt(dx*dx+dy*dy)<n.size+10;
@@ -697,41 +698,57 @@ function getNodeAt(sx,sy){
 
 let panning=false,panSX=0,panSY=0,panCX=0,panCY=0,drag=null;
 
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  if(drag){
+    const w=toWorld(e.clientX-rect.left,e.clientY-rect.top);
+    drag.x=w.x+drag._ox; drag.y=w.y+drag._oy; return;
+  }
+  if(panning){camX=panCX+(e.clientX-panSX);camY=panCY+(e.clientY-panSY);return;}
+  const n=getNodeAt(e.clientX-rect.left,e.clientY-rect.top);
+  if(n!==hoveredNode){
+    hoveredNode=n;
+    if(!lockedNode&&n) previewNode(n);
+    else if(!lockedNode&&!n) clearInfo();
+    canvas.style.cursor=n?'pointer':'grab';
+  }
+});
+
 canvas.addEventListener('mousedown',e=>{
   const n=getNodeAt(e.offsetX,e.offsetY);
   if(n){
-    drag=n;n.pinned=true;n.vx=0;n.vy=0;simOn=true;simN=0;
+    drag=n; n.pinned=true; n.vx=0; n.vy=0; simOn=true; simN=0;
     const w=toWorld(e.offsetX,e.offsetY);
-    drag._ox=n.x-w.x;drag._oy=n.y-w.y;
+    drag._ox=n.x-w.x; drag._oy=n.y-w.y;
   } else {
-    panning=true;panSX=e.clientX;panSY=e.clientY;panCX=camX;panCY=camY;
+    panning=true; panSX=e.clientX; panSY=e.clientY; panCX=camX; panCY=camY;
     mapLeft.classList.add('grabbing');
   }
 });
-window.addEventListener('mousemove',e=>{
-  if(drag){
-    const rect=canvas.getBoundingClientRect();
-    const w=toWorld(e.clientX-rect.left,e.clientY-rect.top);
-    drag.x=w.x+drag._ox;drag.y=w.y+drag._oy;
-  } else if(panning){
-    camX=panCX+(e.clientX-panSX);camY=panCY+(e.clientY-panSY);
-  }
+
+window.addEventListener('mouseup',e=>{
+  if(drag) drag=null;
+  panning=false; mapLeft.classList.remove('grabbing');
 });
-window.addEventListener('mouseup',()=>{drag=null;panning=false;mapLeft.classList.remove('grabbing');});
-canvas.addEventListener('dblclick',e=>{
-  const n=getNodeAt(e.offsetX,e.offsetY);
-  if(n){n.pinned=false;simOn=true;simN=0;}
-});
+
 canvas.addEventListener('click',e=>{
   const n=getNodeAt(e.offsetX,e.offsetY);
-  if(n){selectedNode=n;showInfo(n);}
-  else{selectedNode=null;clearInfo();}
+  if(n){
+    if(lockedNode===n){ lockedNode=null; clearInfo(); selectedNode=null; }
+    else { lockedNode=n; selectedNode=n; showInfo(n); }
+  } else {
+    lockedNode=null; selectedNode=null;
+    if(hoveredNode) previewNode(hoveredNode);
+    else clearInfo();
+  }
 });
+
+canvas.addEventListener('mouseleave',()=>{ if(!lockedNode){ hoveredNode=null; clearInfo(); }});
+canvas.addEventListener('dblclick',e=>{ const n=getNodeAt(e.offsetX,e.offsetY); if(n){n.pinned=false;simOn=true;simN=0;} });
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
   const f=e.deltaY<0?1.1:0.91;
-  camX=e.offsetX-(e.offsetX-camX)*f;
-  camY=e.offsetY-(e.offsetY-camY)*f;
+  camX=e.offsetX-(e.offsetX-camX)*f; camY=e.offsetY-(e.offsetY-camY)*f;
   camScale=Math.max(0.2,Math.min(5,camScale*f));
 },{passive:false});
 
@@ -765,48 +782,74 @@ canvas.addEventListener('touchmove',e=>{
     camScale=Math.max(0.2,Math.min(5,camScale*(d/lp)));lp=d;
   }
 },{passive:false});
-canvas.addEventListener('touchend',()=>{drag=null;t0=null;lp=null;});
+canvas.addEventListener('touchend',()=>{
+  const n=hoveredNode;
+  if(n&&!drag){lockedNode=n;showInfo(n);}
+  drag=null;t0=null;lp=null;
+});
 
-// ── SHOW NODE INFO ────────────────────────────────────────
+// ── INFO PANEL ────────────────────────────────────────────
+function previewNode(n){
+  document.getElementById('ir-name').textContent=n.label;
+  document.getElementById('ir-name').style.color=COLORS[n.group]?.node||'#fff';
+  document.getElementById('stat-selected').textContent='Hover: '+n.label;
+  const conns=allEdges.filter(e=>e.s===n.id||e.t===n.id);
+  document.getElementById('ir-body').innerHTML=`<div style="padding:14px 16px;">
+    <div style="font-size:13px;color:var(--ink2);line-height:1.65;margin-bottom:10px;">${n.desc||''}</div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;">${conns.length} connection${conns.length!==1?'s':''} · Click to explore</div>
+  </div>`;
+}
+
 function showInfo(n){
   const col=COLORS[n.group]?.node||'#888';
   document.getElementById('ir-name').textContent=n.label;
   document.getElementById('ir-name').style.color=col;
+  document.getElementById('stat-selected').textContent=n.label+' · locked';
 
-  const connEdges=edges.filter(e=>e.s===n.id||e.t===n.id);
+  const connEdges=allEdges.filter(e=>e.s===n.id||e.t===n.id);
   const connIds=connEdges.map(e=>e.s===n.id?e.t:e.s);
-  document.getElementById('stat-selected').textContent=`${n.label} · ${connEdges.length} connection${connEdges.length!==1?'s':''}`;
 
-  // Match to OPERATORS
-  const op=typeof OPERATORS!=='undefined'&&OPERATORS.find(o=>
-    o.id===n.id||n.id.replace('_n','')===o.id||
-    (o.name&&n.label&&o.name.toLowerCase().startsWith(n.label.toLowerCase().split(' ')[0]))
-  );
-  // Match to COUNTRIES
-  const country=typeof COUNTRIES!=='undefined'&&
-    COUNTRIES.find(co=>co.id+'_n'===n.id||co.id===n.id.replace('_n',''));
+  // Match OPERATORS, COUNTRIES, PEOPLE
+  const isPerson=PEOPLE_GROUPS.has(n.group);
+  let op=null,country=null,person=null;
+
+  if(isPerson&&typeof PEOPLE!=='undefined'){
+    person=PEOPLE.find(p=>p.id===n.personId);
+  } else if(typeof OPERATORS!=='undefined'){
+    op=OPERATORS.find(o=>o.id===n.id||n.id.replace('_n','')===o.id||
+      (o.name&&n.label&&o.name.toLowerCase().startsWith(n.label.toLowerCase().split(' ')[0])));
+  }
+  if(!isPerson&&typeof COUNTRIES!=='undefined'){
+    country=COUNTRIES.find(c=>c.id+'_n'===n.id);
+  }
 
   let html='<div class="ir-node">';
-
-  // Group bar
-  html+=`<div class="ir-group-bar" style="background:${col}18;color:${col};">${COLORS[n.group]?.label||n.group}</div>`;
+  const groupLabel=COLORS[n.group]?.label||n.group;
+  html+=`<div class="ir-group-bar" style="background:${col}18;color:${col};">${groupLabel}</div>`;
 
   // Description
-  const desc=op?op.desc:(country?country.desc.split('\n')[0]:n.desc);
+  const desc=person?person.summary:(op?op.desc:(country?country.desc.split('\n')[0]:n.desc));
   html+=`<div class="ir-desc">${desc}</div>`;
 
-  // Alignment pill for countries
+  // Country alignment
   if(country){
     const ls=LEAN_STYLE[country.lean]||{bg:'#eee',fg:'#333'};
     html+=`<div class="ir-align"><span class="align-pill" style="background:${ls.bg};color:${ls.fg};">${country.leanLabel}</span></div>`;
   }
 
-  // Threat
+  // Person analysis snippet
+  if(person&&person.analysis){
+    html+=`<div class="ir-threat">
+      <div class="ir-threat-label">Analysis</div>
+      <div class="ir-threat-text">${person.analysis.slice(0,250)}${person.analysis.length>250?'…':''}</div>
+    </div>`;
+  }
+
+  // Operator threat
   if(op&&op.threat){
-    const short=op.threat.slice(0,260)+(op.threat.length>260?'…':'');
     html+=`<div class="ir-threat">
       <div class="ir-threat-label">⚠ Threat mechanism</div>
-      <div class="ir-threat-text">${short}</div>
+      <div class="ir-threat-text">${op.threat.slice(0,250)}${op.threat.length>250?'…':''}</div>
     </div>`;
   }
 
@@ -815,53 +858,35 @@ function showInfo(n){
     html+=`<div class="ir-conns-section">
       <div class="ir-conns-label">Connections (${connIds.length})</div>
       <div class="ir-conn-list">`;
-
     connIds.forEach(cid=>{
-      const cn=nodeById[cid];
-      if(!cn) return;
+      const cn=nodeById[cid]; if(!cn) return;
       const ccol=COLORS[cn.group]?.node||'#888';
       const ew=connEdges.find(e=>(e.s===n.id&&e.t===cid)||(e.t===n.id&&e.s===cid));
-      const strength=ew?STRENGTH[ew.w]||'Documented':'';
-
-      // Sub label
-      const coMatch=typeof COUNTRIES!=='undefined'&&COUNTRIES.find(co=>co.id+'_n'===cid||co.id===cid.replace('_n',''));
-      const opMatch=typeof OPERATORS!=='undefined'&&OPERATORS.find(o=>o.id===cid||cid.replace('_n','')===o.id||
+      const strength=ew?STRENGTH[ew.w]||'':'';
+      const isPers=PEOPLE_GROUPS.has(cn.group);
+      const coM=typeof COUNTRIES!=='undefined'&&COUNTRIES.find(c=>c.id+'_n'===cid);
+      const opM=typeof OPERATORS!=='undefined'&&OPERATORS.find(o=>o.id===cid||
         (o.name&&cn.label&&o.name.toLowerCase().startsWith(cn.label.toLowerCase().split(' ')[0])));
-      let sub='';
-      if(coMatch) sub=coMatch.leanLabel;
-      else if(cn.group==='us') sub='US / Western';
-      else if(cn.group==='cn') sub='Chinese';
-      else if(cn.group==='norms') sub='Treaty / Norms body';
-
+      const perM=typeof PEOPLE!=='undefined'&&PEOPLE.find(p=>p.id===cn.personId);
+      let sub=isPers?'Person':(coM?coM.leanLabel:(cn.group==='us'?'US / Western':(cn.group==='cn'?'Chinese':'Norms')));
       let href=null;
-      if(opMatch) href='operators.html?id='+opMatch.id;
-      else if(coMatch) href='countries.html';
-
-      const row=href
-        ?`<a class="ir-conn-item" href="${href}" style="border-left-color:${ccol};">`
-        :`<div class="ir-conn-item" style="border-left-color:${ccol};">`;
+      if(opM) href='operators.html?id='+opM.id;
+      else if(coM) href='countries.html';
+      else if(perM) href='people.html';
+      const row=href?`<a class="ir-conn-item" href="${href}" style="border-left-color:${ccol};">`
+                    :`<div class="ir-conn-item" style="border-left-color:${ccol};">`;
       const end=href?'</a>':'</div>';
-
-      html+=row+`
-        <div>
-          <div class="ir-conn-name">${cn.label}</div>
-          <div class="ir-conn-meta">${sub}${strength?' · '+strength:''}</div>
-        </div>
-        ${href?`<span class="ir-conn-arrow" style="color:${ccol};">→</span>`:''}
-      `+end;
+      html+=row+`<div><div class="ir-conn-name">${cn.label}</div><div class="ir-conn-meta">${sub}${strength?' · '+strength:''}</div></div>${href?`<span class="ir-conn-arrow" style="color:${ccol};">→</span>`:''}`+end;
     });
-
     html+='</div></div>';
   }
 
   // Profile link
   let profileLink=null;
-  if(op) profileLink='operators.html?id='+op.id;
+  if(person) profileLink='people.html';
+  else if(op) profileLink='operators.html?id='+op.id;
   else if(country) profileLink='countries.html';
-  if(profileLink){
-    html+=`<a class="ir-profile-link" href="${profileLink}">View full profile in database →</a>`;
-  }
-
+  if(profileLink) html+=`<a class="ir-profile-link" href="${profileLink}">View full profile →</a>`;
   html+='</div>';
   document.getElementById('ir-body').innerHTML=html;
 }
@@ -870,23 +895,306 @@ function clearInfo(){
   document.getElementById('ir-name').textContent='—';
   document.getElementById('ir-name').style.color='#fff';
   document.getElementById('stat-selected').textContent='Nothing selected';
-  document.getElementById('ir-body').innerHTML=`
-    <div class="ir-empty">
-      <div class="ir-empty-icon">◎</div>
-      <div class="ir-empty-text">Click any node<br>to explore its<br>connections and profile</div>
-    </div>`;
+  document.getElementById('ir-body').innerHTML=`<div class="ir-empty">
+    <div class="ir-empty-icon">◎</div>
+    <div class="ir-empty-text">Hover to preview<br>Click to explore<br>connections &amp; profile</div>
+  </div>`;
 }
 
+// ── TOGGLES ───────────────────────────────────────────────
 function toggleGroup(g,el){
   hiddenGroups.has(g)?hiddenGroups.delete(g):hiddenGroups.add(g);
-  el.classList.toggle('dimmed');draw();
+  el.classList.toggle('dimmed'); draw();
+}
+
+function togglePeople(el){
+  showPeople=!showPeople;
+  document.getElementById('people-toggle-label').textContent=showPeople?'Hide People':'Show People';
+  el.style.opacity=showPeople?'1':'0.6';
+  // Resettle physics
+  simOn=true; simN=0;
+  document.getElementById('stat-nodes').textContent=
+    getActiveNodes().length+' nodes';
+  draw();
 }
 
 function setEdgeFilter(f,btn){
-  edgeFilter=f;
+  edgeFilter=f; domainFilter=null;
   document.querySelectorAll('[data-f]').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');draw();
+  document.querySelectorAll('[data-d]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); draw();
 }
+
+function setDomainFilter(domain,btn){
+  if(domainFilter===domain){ domainFilter=null; btn.classList.remove('active'); clearInfo(); }
+  else {
+    domainFilter=domain;
+    document.querySelectorAll('[data-d]').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('[data-f]').forEach(b=>b.classList.remove('active'));
+    document.querySelector('[data-f="all"]').classList.add('active');
+    edgeFilter='all'; btn.classList.add('active');
+    showDomainInfo(domain);
+  }
+  draw();
+}
+
+function showDomainInfo(domainId){
+  if(typeof DOMAINS==='undefined') return;
+  const d=DOMAINS.find(x=>x.id===domainId); if(!d) return;
+  document.getElementById('ir-name').textContent=d.title;
+  document.getElementById('ir-name').style.color='#D97706';
+  const nodeIds=DOMAIN_NODES[domainId]||[];
+  const nodeLabels=nodeIds.map(id=>{
+    const n=nodeById[id];
+    return n?`<span style="font-family:monospace;font-size:11px;padding:2px 7px;border-radius:2px;background:${COLORS[n.group]?.fill||'#eee'};color:${COLORS[n.group]?.node||'#333'};">${n.label}</span>`:''
+  }).filter(Boolean).join(' ');
+  document.getElementById('ir-body').innerHTML=`<div class="ir-node">
+    <div class="ir-group-bar" style="background:#D9770615;color:#D97706;">Domain ${d.num}</div>
+    <div class="ir-desc">${d.summary}</div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+      <div style="font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);margin-bottom:7px;">Operators active in this domain</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">${nodeLabels}</div>
+    </div>
+    <div style="padding:10px 16px 6px;">
+      <div style="font-size:12px;color:var(--ink3);line-height:1.6;">Non-relevant nodes are dimmed. Click any active node for its full profile. Click the domain button again to clear.</div>
+    </div>
+    <a class="ir-profile-link" href="domain.html?id=${d.id}">Read full domain analysis →</a>
+  </div>`;
+  document.getElementById('stat-selected').textContent='Domain: '+d.shortTitle;
+}
+
+// ── VIEW SWITCHER ─────────────────────────────────────────
+function switchView(view, btn){
+  document.querySelectorAll('.view-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(view==='network'){
+    document.getElementById('map-left').style.display='block';
+    document.getElementById('infra-left').style.display='none';
+  } else {
+    document.getElementById('map-left').style.display='none';
+    document.getElementById('infra-left').style.display='block';
+    drawInfra();
+  }
+}
+
+// ── PHYSICAL INFRASTRUCTURE VIEW ─────────────────────────
+const infraCanvas = document.getElementById('infra-canvas');
+const infraCtx    = infraCanvas.getContext('2d');
+let infraDrawn=false;
+
+function resizeInfra(){
+  infraCanvas.width  = document.getElementById('infra-left').clientWidth||600;
+  infraCanvas.height = document.getElementById('infra-left').clientHeight||500;
+}
+
+function drawInfra(){
+  resizeInfra();
+  const W=infraCanvas.width, H=infraCanvas.height;
+  const ctx=infraCtx;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0D1822'; ctx.fillRect(0,0,W,H);
+
+  // Scale factor — base design at 800x560
+  const sx=W/800, sy=H/560;
+  function p(x,y){return[x*sx,y*sy];}
+
+  // ── SEA BACKGROUND ────────────────────────────────────
+  ctx.fillStyle='rgba(20,50,90,0.35)';
+  ctx.fillRect(0,0,W,H);
+
+  // ── TITLE & LEGEND ────────────────────────────────────
+  ctx.font=`600 ${12*sx}px 'IBM Plex Mono',monospace`;
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  ctx.fillText('PHYSICAL INFRASTRUCTURE — SOUTHEAST ASIA', 16*sx, 22*sy);
+
+  // Legend
+  const legX=16*sx, legY=40*sy, legGap=16*sy;
+  const legendItems=[
+    {col:'#4A90D9',shape:'line',label:'US-owned submarine cables'},
+    {col:'#DE2910',shape:'line',label:'Huawei Marine Networks cables'},
+    {col:'#888',shape:'line',label:'Neutral / consortium cables'},
+    {col:'#4A90D9',shape:'circle',label:'US hyperscale data centre cluster'},
+    {col:'#DE2910',shape:'circle',label:'CN cloud data centre cluster'},
+    {col:'#F59E0B',shape:'circle',label:'Mixed / sovereign data centre'},
+  ];
+  legendItems.forEach((item,i)=>{
+    const y=legY+i*legGap;
+    if(item.shape==='line'){
+      ctx.strokeStyle=item.col; ctx.lineWidth=2*sx;
+      ctx.beginPath(); ctx.moveTo(legX,y); ctx.lineTo(legX+18*sx,y); ctx.stroke();
+    } else {
+      ctx.fillStyle=item.col+'88'; ctx.strokeStyle=item.col;
+      ctx.lineWidth=1.5*sx;
+      ctx.beginPath(); ctx.arc(legX+9*sx,y,4*sx,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    }
+    ctx.fillStyle='rgba(255,255,255,0.6)';
+    ctx.font=`400 ${9.5*sx}px 'IBM Plex Mono',monospace`;
+    ctx.fillText(item.label, legX+24*sx, y+3*sy);
+  });
+
+  // ── COUNTRY LAND MASSES (simplified polygons) ──────────
+  // Approximate outlines — stylised, not precise
+  const lands=[
+    // Myanmar
+    {name:'Myanmar',col:'#DE2910',pts:[[310,90],[330,85],[345,100],[350,130],[340,160],[325,170],[310,155],[305,130],[308,105]],lean:'cn'},
+    // Thailand
+    {name:'Thailand',col:'#D97706',pts:[[330,155],[355,148],[370,160],[375,185],[360,210],[345,230],[335,215],[328,195],[330,175]],lean:'hedge'},
+    // Vietnam
+    {name:'Vietnam',col:'#D97706',pts:[[360,120],[385,115],[395,130],[390,165],[380,195],[365,210],[355,195],[360,175],[368,155],[362,135]],lean:'hedge'},
+    // Cambodia
+    {name:'Cambodia',col:'#DE2910',pts:[[345,215],[375,210],[385,225],[375,245],[350,248],[338,238],[340,222]],lean:'cn'},
+    // Laos
+    {name:'Laos',col:'#DE2910',pts:[[355,150],[375,145],[385,160],[380,185],[365,190],[352,178],[350,162]],lean:'cn'},
+    // Malaysia Peninsula
+    {name:'Malaysia',col:'#DE2910',pts:[[345,255],[370,250],[378,265],[372,285],[355,292],[342,278],[340,262]],lean:'cn'},
+    // Singapore
+    {name:'Singapore',col:'#D97706',pts:[[358,295],[368,293],[370,302],[360,304],[355,299]],lean:'hedge'},
+    // Indonesia (Java/Sumatra simplified)
+    {name:'Indonesia',col:'#D97706',pts:[[290,300],[360,308],[420,305],[460,312],[470,325],[380,335],[300,330],[270,318]],lean:'hedge'},
+    // Philippines
+    {name:'Philippines',col:'#4A90D9',pts:[[460,145],[485,140],[495,160],[490,185],[475,195],[460,180],[455,162]],lean:'us'},
+    // Borneo/Malaysia East
+    {name:'Borneo',col:'#DE2910',pts:[[390,255],[430,248],[450,265],[445,295],[420,305],[395,295],[385,272]],lean:'cn'},
+    // Brunei (tiny)
+    {name:'Brunei',col:'#4A90D9',pts:[[412,260],[420,258],[422,266],[414,268]],lean:'us'},
+  ];
+
+  lands.forEach(land=>{
+    if(!land.pts.length) return;
+    const leanFill={us:'rgba(74,144,217,0.25)',cn:'rgba(222,41,16,0.22)',hedge:'rgba(217,119,6,0.22)'};
+    const leanStroke={us:'#4A90D9',cn:'#DE2910',hedge:'#D97706'};
+    ctx.beginPath();
+    land.pts.forEach(([x,y],i)=>{ if(i===0) ctx.moveTo(...p(x,y)); else ctx.lineTo(...p(x,y)); });
+    ctx.closePath();
+    ctx.fillStyle=leanFill[land.lean]||'rgba(100,100,100,0.2)';
+    ctx.strokeStyle=leanStroke[land.lean]||'#888';
+    ctx.lineWidth=1.5*sx;
+    ctx.fill(); ctx.stroke();
+    // Country label
+    const cx=land.pts.reduce((s,[x])=>s+x,0)/land.pts.length;
+    const cy=land.pts.reduce((s,[,y])=>s+y,0)/land.pts.length;
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.font=`600 ${8.5*sx}px 'IBM Plex Mono',monospace`;
+    ctx.textAlign='center';
+    ctx.fillText(land.name,...p(cx,cy));
+  });
+  ctx.textAlign='left';
+
+  // ── SUBMARINE CABLES ──────────────────────────────────
+  // [from, to, owner, colour]
+  const cables=[
+    // US-owned / consortium (Google, Meta, Amazon)
+    {pts:[[140,280],[240,290],[355,298],[460,310],[580,330]],col:'#4A90D9',owner:'Google/Meta/Amazon (US)',w:2},
+    {pts:[[140,300],[200,310],[290,320],[360,310],[460,318]],col:'#4A90D9',owner:'SEA-ME-WE consortium',w:1.5},
+    {pts:[[460,315],[510,295],[560,270],[620,250]],col:'#4A90D9',owner:'Trans-Pacific US',w:2},
+    // Huawei Marine Networks (CN)
+    {pts:[[200,200],[290,240],[360,270],[440,285],[520,300]],col:'#DE2910',owner:'Huawei Marine Networks',w:2},
+    {pts:[[350,298],[420,340],[500,360],[580,350]],col:'#DE2910',owner:'Huawei Marine / PEACE',w:1.5},
+    // Neutral
+    {pts:[[140,270],[230,260],[330,255],[430,260],[520,275]],col:'#666',owner:'AAG Cable (consortium)',w:1.5},
+    {pts:[[460,180],[500,220],[540,260],[570,295]],col:'#666',owner:'APCN-2',w:1},
+  ];
+
+  cables.forEach(cable=>{
+    ctx.save();
+    ctx.strokeStyle=cable.col;
+    ctx.lineWidth=cable.w*sx;
+    ctx.globalAlpha=0.65;
+    ctx.setLineDash([6*sx,4*sx]);
+    ctx.beginPath();
+    cable.pts.forEach(([x,y],i)=>{ if(i===0) ctx.moveTo(...p(x,y)); else ctx.lineTo(...p(x,y)); });
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // ── DATA CENTRE CLUSTERS ──────────────────────────────
+  // [x, y, size, label, usSize, cnSize]
+  const dcs=[
+    {x:360,y:296,label:'Singapore',usGW:12,cnGW:8,note:'$14B+ investment; global hub'},
+    {x:350,y:270,label:'Johor (MY)',usGW:6,cnGW:3,note:'$16B BOI approved; fastest growing'},
+    {x:310,y:316,label:'Jakarta',usGW:4,cnGW:4,note:'AWS, Google, Alibaba all present'},
+    {x:280,y:308,label:'Batam (ID)',usGW:3,cnGW:2,note:'AWS major investment'},
+    {x:348,y:238,label:'Bangkok',usGW:3,cnGW:5,note:'ByteDance $25B; dual-bloc testbed'},
+    {x:460,y:175,label:'Manila',usGW:2,cnGW:1,note:'US-aligned; growing cloud market'},
+    {x:375,y:135,label:'Hanoi/HCMC',usGW:2,cnGW:2,note:'Vietnam dual-partnership reflected'},
+  ];
+
+  dcs.forEach(dc=>{
+    const [x,y]=p(dc.x,dc.y);
+    const total=dc.usGW+dc.cnGW;
+    const r=Math.sqrt(total)*3.5*sx;
+
+    // US portion arc
+    if(dc.usGW>0){
+      const usAngle=(dc.usGW/total)*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(x,y);
+      ctx.arc(x,y,r,-Math.PI/2,-Math.PI/2+usAngle);
+      ctx.closePath();
+      ctx.fillStyle='rgba(74,144,217,0.55)'; ctx.fill();
+      ctx.strokeStyle='#4A90D9'; ctx.lineWidth=1.5*sx; ctx.stroke();
+    }
+    // CN portion arc
+    if(dc.cnGW>0){
+      const usAngle=(dc.usGW/total)*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(x,y);
+      ctx.arc(x,y,r,-Math.PI/2+usAngle,-Math.PI/2+Math.PI*2);
+      ctx.closePath();
+      ctx.fillStyle='rgba(222,41,16,0.5)'; ctx.fill();
+      ctx.strokeStyle='#DE2910'; ctx.lineWidth=1.5*sx; ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.font=`700 ${9*sx}px 'IBM Plex Mono',monospace`;
+    ctx.textAlign='center';
+    ctx.fillText(dc.label,x,y-r-5*sy);
+    ctx.font=`400 ${8*sx}px 'IBM Plex Mono',monospace`;
+    ctx.fillStyle='rgba(255,255,255,0.45)';
+    ctx.fillText(`US:${dc.usGW}GW CN:${dc.cnGW}GW`,x,y+r+10*sy);
+  });
+  ctx.textAlign='left';
+
+  // ── CABLE LANDING STATIONS ─────────────────────────────
+  const stations=[
+    {x:358,y:298,col:'#4A90D9'},{x:362,y:300,col:'#DE2910'}, // Singapore
+    {x:310,y:320,col:'#4A90D9'},{x:308,y:322,col:'#DE2910'}, // Jakarta
+    {x:345,y:260,col:'#4A90D9'},                               // Kuala Lumpur coast
+    {x:460,y:185,col:'#4A90D9'},                               // Manila
+    {x:380,y:140,col:'#888'},                                  // Da Nang
+  ];
+
+  stations.forEach(st=>{
+    const [x,y]=p(st.x,st.y);
+    ctx.fillStyle=st.col;
+    ctx.strokeStyle='rgba(255,255,255,0.6)';
+    ctx.lineWidth=1*sx;
+    ctx.beginPath(); ctx.arc(x,y,3*sx,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  });
+
+  // ── 5G DOMINANCE INDICATOR ────────────────────────────
+  const g5=[
+    {country:'Cambodia',x:358,y:232,vendor:'Huawei dominant',col:'#DE2910'},
+    {country:'Malaysia',x:348,y:270,vendor:'Huawei lead',col:'#DE2910'},
+    {country:'Thailand',x:352,y:195,vendor:'Huawei + Ericsson',col:'#888'},
+    {country:'Philippines',x:475,y:165,vendor:'Nokia/Ericsson',col:'#4A90D9'},
+    {country:'Singapore',x:362,y:292,vendor:'Dual: Ericsson+Huawei',col:'#D97706'},
+  ];
+
+  ctx.font=`400 ${8*sx}px 'IBM Plex Mono',monospace`;
+  g5.forEach(item=>{
+    const [x,y]=p(item.x,item.y);
+    ctx.fillStyle=item.col+'cc';
+    ctx.fillText('5G: '+item.vendor,x,y);
+  });
+
+  // ── TITLE ANNOTATIONS ─────────────────────────────────
+  ctx.font=`500 ${10*sx}px 'IBM Plex Mono',monospace`;
+  ctx.fillStyle='rgba(255,255,255,0.25)';
+  ctx.fillText('Pie charts = data centre capacity split (US/CN GW)', 16*sx, H-24*sy);
+  ctx.fillText('Dashed lines = submarine cable routes', 16*sx, H-12*sy);
+
+  infraDrawn=true;
+}
+
+new ResizeObserver(()=>{ if(infraDrawn) drawInfra(); }).observe(document.getElementById('infra-left'));
 </script>
-</body>
-</html>

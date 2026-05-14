@@ -672,6 +672,23 @@ const MAP_NODES = [
   {id:"defa_n",group:"norms",label:"ASEAN DEFA",size:18,desc:"Digital trade law negotiation"},
   {id:"bri_n",group:"norms",label:"Belt & Road",size:20,desc:"Chinese infrastructure framework"},
   {id:"ipef_n",group:"norms",label:"IPEF/Quad",size:16,desc:"US Indo-Pacific trade framework"},
+
+  // ── PEOPLE NODES ────────────────────────────────────────────────
+  {id:"p-thiel",    group:"people-us", label:"P. Thiel",    size:13, desc:"Co-founder Palantir · Anti-democratic ideology · US political funder", personId:"peter-thiel"},
+  {id:"p-schmidt",  group:"people-us", label:"E. Schmidt",  size:13, desc:"Ex-Google CEO · Chair NSCAI · Architect of US military-AI integration", personId:"eric-schmidt"},
+  {id:"p-luckey",   group:"people-us", label:"P. Luckey",   size:12, desc:"Founder Anduril · AUKUS Pillar II · Autonomous weapons Indo-Pacific", personId:"palmer-luckey"},
+  {id:"p-huang",    group:"people-us", label:"J. Huang",    size:14, desc:"CEO Nvidia · Controls the GPU chokepoint of the global AI stack", personId:"jensen-huang"},
+  {id:"p-ren",      group:"people-cn", label:"Ren Zhengfei",size:14, desc:"Founder Huawei · PLA background · Stated Huawei would comply with Chinese intelligence requests", personId:"ren-zhengfei"},
+  {id:"p-ma",       group:"people-cn", label:"Jack Ma",     size:13, desc:"Founder Alibaba · Disappeared after criticising regulators · CCP senior partner to all Chinese tech", personId:"jack-ma"},
+  {id:"p-zhang",    group:"people-cn", label:"Zhang Yiming",size:12, desc:"Founder ByteDance · Stepped down under political pressure · $30B+ AI infrastructure", personId:"zhang-yiming"},
+  {id:"p-wang",     group:"people-cn", label:"Wang Huning", size:13, desc:"CCP Chief Ideologist · Architect of cyber sovereignty doctrine · ITU strategy", personId:"wang-huning"},
+  {id:"p-tan",      group:"people-both",label:"A. Tan",     size:12, desc:"CEO Grab · ASEAN-origin superapp · Data on 10s of millions · Neither bloc but not neutral", personId:"anthony-tan"},
+  {id:"p-hun",      group:"people-cn", label:"Hun Sen/Manet",size:12, desc:"Cambodia PMs · Clearest case of digital capture in ASEAN · Chinese tech dependency structural", personId:"hun-sen-manet"},
+  {id:"p-duterte",  group:"people-both",label:"Duterte",    size:11, desc:"Ex-Philippines President · Facebook disinformation + DITO Telecom (China Telecom JV)", personId:"rodrigo-duterte"},
+  {id:"p-prabowo",  group:"people-both",label:"Prabowo",    size:12, desc:"Indonesia President · Transactional balancer · Both blocs competing for alignment", personId:"prabowo-subianto"},
+  {id:"p-anwar",    group:"people-both",label:"Anwar Ibrahim",size:12, desc:"Malaysia PM · Deliberate hedger · Huawei 5G + Western cloud investment simultaneously", personId:"anwar-ibrahim"},
+  {id:"p-thaksin",  group:"people-both",label:"Thaksin",    size:11, desc:"Thailand political network · Data centre investment boom under Pheu Thai govt", personId:"thaksin-shinawatra"},
+  {id:"p-junta",    group:"people-cn", label:"Myanmar SAC", size:11, desc:"Myanmar junta · Chinese tech dependency by necessity · Both blocs implicated in Myanmar's crisis", personId:"myanmar-junta"},
 ];
 
 const MAP_EDGES = [
@@ -784,6 +801,27 @@ const MAP_EDGES = [
   {s:"itu_n",t:"alibaba",w:2},{s:"itu_n",t:"bytedance",w:1},
   {s:"itu_n",t:"sg_n",w:2},{s:"itu_n",t:"id_n",w:2},{s:"itu_n",t:"my_n",w:1},
   {s:"itu_n",t:"th_n",w:1},{s:"itu_n",t:"ph_n",w:1},{s:"itu_n",t:"vn_n",w:1},
+  // ── PEOPLE EDGES ─────────────────────────────────────────────────
+  // Architects → Operators
+  {s:"p-thiel",   t:"palantir",    w:3},
+  {s:"p-schmidt", t:"google",      w:3},
+  {s:"p-schmidt", t:"openai_n",    w:2},
+  {s:"p-luckey",  t:"nso",         w:1},
+  {s:"p-huang",   t:"aws",         w:2},{s:"p-huang",t:"microsoft",w:2},{s:"p-huang",t:"google",w:2},{s:"p-huang",t:"alibaba",w:2},
+  {s:"p-ren",     t:"huawei",      w:3},
+  {s:"p-ma",      t:"alibaba",     w:3},
+  {s:"p-zhang",   t:"bytedance",   w:3},
+  {s:"p-wang",    t:"itu_n",       w:3},{s:"p-wang",t:"defa_n",w:2},
+  // People → Countries
+  {s:"p-thiel",   t:"sg_n",        w:2},{s:"p-thiel",t:"ph_n",w:2},{s:"p-thiel",t:"id_n",w:1},
+  {s:"p-tan",     t:"sg_n",        w:3},{s:"p-tan",t:"id_n",w:3},{s:"p-tan",t:"my_n",w:2},{s:"p-tan",t:"th_n",w:2},{s:"p-tan",t:"ph_n",w:2},{s:"p-tan",t:"vn_n",w:1},
+  {s:"p-hun",     t:"kh_n",        w:3},{s:"p-hun",t:"huawei",w:2},{s:"p-hun",t:"hikvision_n",w:2},
+  {s:"p-duterte", t:"ph_n",        w:3},{s:"p-duterte",t:"meta",w:2},
+  {s:"p-prabowo", t:"id_n",        w:3},{s:"p-prabowo",t:"aws",w:1},{s:"p-prabowo",t:"alibaba",w:1},
+  {s:"p-anwar",   t:"my_n",        w:3},{s:"p-anwar",t:"huawei",w:2},{s:"p-anwar",t:"microsoft",w:1},
+  {s:"p-thaksin", t:"th_n",        w:3},{s:"p-thaksin",t:"bytedance",w:2},
+  {s:"p-junta",   t:"mm_n",        w:3},{s:"p-junta",t:"huawei",w:2},{s:"p-junta",t:"meta",w:1},
+
 ];
 
 
@@ -991,6 +1029,7 @@ const PEOPLE = [
       {text:"Access Now (2023). Myanmar Digital Rights Under the Junta.",url:"https://www.accessnow.org/myanmar-digital-rights-under-junta/"}
     ]
   }
+
 ];
 
 
